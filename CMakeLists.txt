@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 3.23.1 FATAL_ERROR)
+# cmake-format: off
+# CMake 3.14 fixes propagation of object library linking
+# Cmake 3.24 dependency providers (helps with Conan find_package integration)
+# cmake-format: on
+cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 
 # conanfile.py parses next line to determine version which feeds the version to everything
 set(DFX_CLOUD_LIBRARY_VERSION 1.3.1)
@@ -68,7 +72,7 @@ set(DOC_LANGUAGE
     CACHE STRING "Language to build documentation for: english, chinese")
 
 set(WITH_CLANG_FORMAT
-    FALSE
+    TRUE
     CACHE BOOL "Enable clang format targets")
 
 set(ENABLE_CHECKS
@@ -274,12 +278,14 @@ message(STATUS "----------------------")
 message(STATUS "")
 message(STATUS "    Target Host:  ${CMAKE_SYSTEM_NAME}, Arch: ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "    CXX COMPILER: ${CMAKE_CXX_COMPILER}    (${CMAKE_CXX_COMPILER_VERSION})")
+message(STATUS "    CMAKE_PROJECT_TOP_LEVEL_INCLUDES: ${CMAKE_PROJECT_TOP_LEVEL_INCLUDES}")
 message(STATUS "    CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
 message(STATUS "    CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "")
 message(STATUS "    BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 message(STATUS "    SHARED_LIBS=${BUILD_SHARED_LIBS}")
 message(STATUS "")
+message(STATUS "    MEASUREMENT_ONLY=${MEASUREMENT_ONLY}")
 message(STATUS "    WITH_CURL=${WITH_CURL}")
 message(STATUS "    WITH_REST=${WITH_REST}")
 message(STATUS "    WITH_WEBSOCKET=${WITH_WEBSOCKET}")
@@ -288,6 +294,9 @@ message(STATUS "    WITH_VALIDATORS=${WITH_VALIDATORS}")
 message(STATUS "")
 message(STATUS "    WITH_YAML=${WITH_YAML}")
 message(STATUS "")
+message(STATUS "    WITH_DFXCLI=${WITH_DFXCLI}")
+message(STATUS "")
+message(STATUS "    ENABLE_CHECKS=${ENABLE_CHECKS}")
 message(STATUS "    WITH_DOCS=${WITH_DOCS}  (${DOC_LANGUAGE})")
 message(STATUS "    WITH_TESTS=${WITH_TESTS}")
 message(STATUS "")

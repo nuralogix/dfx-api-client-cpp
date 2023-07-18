@@ -7,6 +7,7 @@
 
 #include "nlohmann/json.hpp"
 #include <fmt/format.h>
+#include <sstream>
 #include <string>
 
 using namespace dfx::api;

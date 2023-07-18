@@ -51,7 +51,6 @@ add_library(
   src/StudyTypes.cpp
   src/UserTypes.cpp
   $<$<BOOL:${EMBED_CA_CERTS}>:cacert.c>
-  ${CMAKE_BINARY_DIR}/version_info.cpp
   ${API_CPP_PUBLIC_HEADERS})
 
 # These install to a separate folder but when they were clumped, they all installed to the same destination
@@ -89,6 +88,8 @@ target_link_libraries(
   api-cpp
   PUBLIC nlohmann_json::nlohmann_json api-cpp-types
   PRIVATE $<BUILD_INTERFACE:api-utils>
+          dfxprotosweb::dfxprotosweb
+          protobuf::protobuf
           $<BUILD_INTERFACE:$<$<BOOL:${WITH_CURL}>:CURL::libcurl>>
           $<BUILD_INTERFACE:$<$<BOOL:${WITH_YAML}>:yaml-cpp::yaml-cpp>>
           $<BUILD_INTERFACE:$<$<BOOL:${WITH_GRPC}>:api-cpp-grpc>>

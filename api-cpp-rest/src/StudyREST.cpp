@@ -206,7 +206,7 @@ CloudStatus StudyREST::listStudyTemplates(const CloudConfig& config,
     std::stringstream urlQuery;
     urlQuery << "Status=" << StudyStatusMapper::toString.at(status) << "&Type" << type;
     auto restStatus = CloudREST::performRESTCall(
-        config, web::Studies::Templates, config.authToken, {}, urlQuery.str(), request, response);
+        config, web::Studies::RetrieveTemplates, config.authToken, {}, urlQuery.str(), request, response);
 
     if (restStatus.OK()) {
         for (auto& item : response) {

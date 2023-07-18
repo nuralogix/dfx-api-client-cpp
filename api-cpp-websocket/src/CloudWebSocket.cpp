@@ -41,7 +41,6 @@
 #include <unistd.h>
 #endif
 
-#include "dfx/api/utils/FileUtils.hpp"
 #include <algorithm>
 #include <chrono>
 #include <thread>

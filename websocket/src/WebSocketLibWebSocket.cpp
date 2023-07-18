@@ -10,6 +10,10 @@
 #include <sstream>
 #include <thread> // std::this_thread::sleep_for
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 namespace fs = std::filesystem;
 
 // https://github.com/iamscottmoyers/simple-libwebsockets-example/blob/master/client.c
@@ -122,6 +126,9 @@ void WebSocketLibWebSocket::setRootCertificate(const std::string& rootCA)
     // tmpnam is considered unsafe and not thread safe, the alternative below uses c++17
     // certFilePath = std::tmpnam(nullptr);
 
+// iOS does not support the std::filesystem API, might require something else
+// but there is a decent chance that configuring the rootCA on iOS is unnecessary?
+#ifndef TARGET_OS_IPHONE
     auto path = fs::temp_directory_path();
     certFilePath = path.append("cacert.pem").string();
 
@@ -130,6 +137,7 @@ void WebSocketLibWebSocket::setRootCertificate(const std::string& rootCA)
     auto length = static_cast<std::streamsize>(rootCA.length());
     file.write(rootCA.c_str(), length);
     file.close();
+#endif
 }
 
 void WebSocketLibWebSocket::open(const std::string& inputURL, const std::string& protocol)

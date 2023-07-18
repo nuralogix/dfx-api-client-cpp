@@ -48,7 +48,4 @@ target_include_directories(
           $<BUILD_INTERFACE:$<TARGET_PROPERTY:api-protos-grpc,INTERFACE_INCLUDE_DIRECTORIES>>
           $<BUILD_INTERFACE:$<TARGET_PROPERTY:fmt::fmt,INTERFACE_INCLUDE_DIRECTORIES>>)
 
-# gRPC seems to have a couple absl libraries which need to be added explicitly to satisfy link requirements
-target_link_libraries(
-  api-cpp-grpc PRIVATE protobuf::protobuf gRPC::grpc++ absl::random_internal_randen_hwaes_impl
-                       absl::random_internal_pool_urbg)
+target_link_libraries(api-cpp-grpc PRIVATE protobuf::protobuf gRPC::grpc++)

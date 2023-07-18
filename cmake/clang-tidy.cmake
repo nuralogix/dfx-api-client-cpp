@@ -5,11 +5,12 @@ find_program(
   CLANG_TIDY_EXE
   NAMES "clang-tidy"
   DOC "Path to clang-tidy executable"
-  HINTS "/usr/local/opt/llvm/bin" # MacOS brew location
+  HINTS "/usr/local/opt/llvm/bin" # MacOS x86_64 brew location
+        "/opt/homebrew/opt/llvm/bin" # MacOS aarch64 brew location
 )
 
 if(NOT CLANG_TIDY_EXE)
-  message(STATUS "clang-tidy not found.")
+  message(FATAL_ERROR "clang-tidy requested but not found.")
 else()
   message(STATUS "clang-tidy found: ENABLE [${CLANG_TIDY_EXE}]")
   set(DO_CLANG_TIDY "${CLANG_TIDY_EXE}")

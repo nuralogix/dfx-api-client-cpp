@@ -229,7 +229,7 @@ CloudStatus StudyWebSocket::listStudyTemplates(const CloudConfig& config,
 
     dfx::proto::studies::TemplatesRequest request;
     dfx::proto::studies::TemplatesResponse response;
-    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Studies::Templates, request, response);
+    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Studies::RetrieveTemplates, request, response);
     if (Status.OK()) {
         for (auto index = 0; index < response.values_size(); index++) {
             const auto& listResponse = response.values(index);
