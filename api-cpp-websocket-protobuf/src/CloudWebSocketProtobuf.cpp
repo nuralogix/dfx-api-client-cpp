@@ -1,19 +1,19 @@
 // Copyright (c) Nuralogix. All rights reserved. Licensed under the MIT license.
 // See LICENSE.txt in the project root for license information.
 
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 #include "dfx/api/CloudLog.hpp"
 
 #include "dfx/api/utils/HexDump.hpp"
 #include "dfx/api/validator/CloudValidator.hpp"
-#include "dfx/api/websocket/DeviceWebSocket.hpp"
-#include "dfx/api/websocket/LicenseWebSocket.hpp"
-#include "dfx/api/websocket/MeasurementStreamWebSocket.hpp"
-#include "dfx/api/websocket/MeasurementWebSocket.hpp"
-#include "dfx/api/websocket/OrganizationWebSocket.hpp"
-#include "dfx/api/websocket/ProfileWebSocket.hpp"
-#include "dfx/api/websocket/StudyWebSocket.hpp"
-#include "dfx/api/websocket/UserWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/DeviceWebSocketProtobuf.hpp"
+#include "dfx/api/websocket/protobuf/LicenseWebSocketProtobuf.hpp"
+#include "dfx/api/websocket/protobuf/MeasurementStreamWebSocketProtobuf.hpp"
+#include "dfx/api/websocket/protobuf/MeasurementWebSocketProtobuf.hpp"
+#include "dfx/api/websocket/protobuf/OrganizationWebSocketProtobuf.hpp"
+#include "dfx/api/websocket/protobuf/ProfileWebSocketProtobuf.hpp"
+#include "dfx/api/websocket/protobuf/StudyWebSocketProtobuf.hpp"
+#include "dfx/api/websocket/protobuf/UserWebSocketProtobuf.hpp"
 
 #include "dfx/api/web/WebServiceDetail.hpp"
 
@@ -45,23 +45,23 @@
 #include <chrono>
 #include <thread>
 using namespace dfx::api;
-using namespace dfx::api::websocket;
+using namespace dfx::api::websocket::protobuf;
 using namespace dfx::websocket;
 
 extern "C" {
-void CloudWebSocketCallback(const WebSocketEvent& event, void* userData)
+void CloudWebSocketProtobufCallback(const WebSocketEvent& event, void* userData)
 {
-    auto self = static_cast<CloudWebSocket*>(userData);
+    auto self = static_cast<CloudWebSocketProtobuf*>(userData);
     self->handleEvent(event);
 }
 }
 
-CloudWebSocket::CloudWebSocket(const CloudConfig& config)
+CloudWebSocketProtobuf::CloudWebSocketProtobuf(const CloudConfig& config)
     : CloudAPI(config), lastTransactionID(1), closedReason(""), closed(true)
 {
 }
 
-CloudStatus CloudWebSocket::connect(const CloudConfig& config)
+CloudStatus CloudWebSocketProtobuf::connect(const CloudConfig& config)
 {
     DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, connect(config));
 
@@ -76,7 +76,7 @@ CloudStatus CloudWebSocket::connect(const CloudConfig& config)
     }
 
     webSocket->setRootCertificate(getRootCA(config));
-    webSocket->setEventCallback(&CloudWebSocketCallback, this);
+    webSocket->setEventCallback(&CloudWebSocketProtobufCallback, this);
 
     std::string wssURL = fmt::format("wss://{}:{}", config.serverHost, config.serverPort);
     std::string wssProtocol("proto");
@@ -101,7 +101,7 @@ CloudStatus CloudWebSocket::connect(const CloudConfig& config)
     }
 }
 
-CloudWebSocket::~CloudWebSocket()
+CloudWebSocketProtobuf::~CloudWebSocketProtobuf()
 {
     // The webSocket thread may notify us via a callback so we need to ensure the
     // webSocket is properly closed and its associated thread terminates prior to
@@ -111,36 +111,36 @@ CloudWebSocket::~CloudWebSocket()
     }
 }
 
-void CloudWebSocket::handleEvent(const WebSocketEvent& event)
+void CloudWebSocketProtobuf::handleEvent(const WebSocketEvent& event)
 {
 #ifndef NDEBUG
     if (cloudLogIsActive(CLOUD_LOG_LEVEL_TRACE)) {
         switch (event.type) {
             case dfx::websocket::WebSocketEventType::ERROR_EVENT: {
                 cloudLog(CLOUD_LOG_LEVEL_TRACE,
-                         "CloudWebSocket::handleEvent(ERROR) received %d, %s\n",
+                         "CloudWebSocketProtobuf::handleEvent(ERROR) received %d, %s\n",
                          event.error.code,
                          event.error.message.c_str());
                 break;
             }
             case dfx::websocket::WebSocketEventType::OPEN: {
-                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocket::handleEvent(OPEN) received\n");
+                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocketProtobuf::handleEvent(OPEN) received\n");
                 break;
             }
             case dfx::websocket::WebSocketEventType::LISTEN: {
-                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocket::handleEvent(LISTEN) received\n");
+                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocketProtobuf::handleEvent(LISTEN) received\n");
                 break;
             }
             case dfx::websocket::WebSocketEventType::CONNECTION: {
-                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocket::handleEvent(CONNECTION) received\n");
+                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocketProtobuf::handleEvent(CONNECTION) received\n");
                 break;
             }
             case dfx::websocket::WebSocketEventType::MESSAGE: {
-                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocket::handleEvent(MESSAGE) received\n");
+                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocketProtobuf::handleEvent(MESSAGE) received\n");
                 break;
             }
             case dfx::websocket::WebSocketEventType::CLOSED: {
-                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocket::handleEvent(CLOSE) received\n");
+                cloudLog(CLOUD_LOG_LEVEL_TRACE, "CloudWebSocketProtobuf::handleEvent(CLOSE) received\n");
             }
         }
     }
@@ -204,7 +204,7 @@ void CloudWebSocket::handleEvent(const WebSocketEvent& event)
 #include <google/protobuf/util/json_util.h>
 #endif
 
-void CloudWebSocket::handleMessageEvent(const dfx::websocket::WebSocketMessageEvent& messageEvent)
+void CloudWebSocketProtobuf::handleMessageEvent(const dfx::websocket::WebSocketMessageEvent& messageEvent)
 {
     if (messageEvent.data == nullptr) {
         cloudLog(CLOUD_LOG_LEVEL_WARNING, "Ignoring empty data event\n");
@@ -247,7 +247,7 @@ void CloudWebSocket::handleMessageEvent(const dfx::websocket::WebSocketMessageEv
 // requestID stores the actionID leaving the remaining 6 digits to represent a monotonically
 // increasing number. When it reaches the maximum number representable by those 6 digits, it is
 // wrapped back to the start.
-std::string CloudWebSocket::getRequestID(int actionID)
+std::string CloudWebSocketProtobuf::getRequestID(int actionID)
 {
     auto nextID = lastTransactionID++;
     if (nextID > 999999) {
@@ -260,12 +260,13 @@ std::string CloudWebSocket::getRequestID(int actionID)
     return requestID;
 }
 
-void CloudWebSocket::registerStream(const std::string& streamID, MeasurementStreamWebSocket* measurementStream)
+void CloudWebSocketProtobuf::registerStream(const std::string& streamID,
+                                            MeasurementStreamWebSocketProtobuf* measurementStream)
 {
     streams[streamID] = measurementStream;
 }
 
-void CloudWebSocket::deregisterStream(const std::string& streamID)
+void CloudWebSocketProtobuf::deregisterStream(const std::string& streamID)
 {
     auto iter = streams.find(streamID);
     if (iter != streams.end()) {
@@ -273,9 +274,9 @@ void CloudWebSocket::deregisterStream(const std::string& streamID)
     }
 }
 
-CloudStatus CloudWebSocket::sendMessage(const dfx::api::web::WebServiceDetail& detail,
-                                        ::google::protobuf::Message& message,
-                                        ::google::protobuf::Message& response)
+CloudStatus CloudWebSocketProtobuf::sendMessage(const dfx::api::web::WebServiceDetail& detail,
+                                                ::google::protobuf::Message& message,
+                                                ::google::protobuf::Message& response)
 {
     std::string requestString;
     if (!message.SerializeToString(&requestString)) {
@@ -386,7 +387,8 @@ CloudStatus CloudWebSocket::sendMessage(const dfx::api::web::WebServiceDetail& d
     }
 }
 
-CloudStatus CloudWebSocket::decodeWebSocketError(const std::string& statusCode, const std::vector<uint8_t>& data)
+CloudStatus CloudWebSocketProtobuf::decodeWebSocketError(const std::string& statusCode,
+                                                         const std::vector<uint8_t>& data)
 {
     dfx::proto::util::Error error;
     if (error.ParseFromArray(data.data(), data.size())) {
@@ -439,7 +441,7 @@ CloudStatus CloudWebSocket::decodeWebSocketError(const std::string& statusCode, 
     }
 }
 
-CloudStatus CloudWebSocket::login(CloudConfig& config)
+CloudStatus CloudWebSocketProtobuf::login(CloudConfig& config)
 {
     DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, login(config));
 
@@ -456,7 +458,7 @@ CloudStatus CloudWebSocket::login(CloudConfig& config)
     return status;
 }
 
-CloudStatus CloudWebSocket::logout(CloudConfig& config)
+CloudStatus CloudWebSocketProtobuf::logout(CloudConfig& config)
 {
     DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, logout(config));
 
@@ -474,9 +476,9 @@ CloudStatus CloudWebSocket::logout(CloudConfig& config)
     return status;
 }
 
-CloudStatus CloudWebSocket::registerDevice(CloudConfig& config,
-                                           const std::string& appName,
-                                           const std::string& appVersion)
+CloudStatus CloudWebSocketProtobuf::registerDevice(CloudConfig& config,
+                                                   const std::string& appName,
+                                                   const std::string& appVersion)
 {
     DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, registerDevice(config, appName, appVersion));
 
@@ -498,7 +500,7 @@ CloudStatus CloudWebSocket::registerDevice(CloudConfig& config,
     return status;
 }
 
-CloudStatus CloudWebSocket::unregisterDevice(CloudConfig& config)
+CloudStatus CloudWebSocketProtobuf::unregisterDevice(CloudConfig& config)
 {
     DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, unregisterDevice(config));
     dfx::proto::organizations::UnregisterLicenseRequest request;
@@ -509,61 +511,67 @@ CloudStatus CloudWebSocket::unregisterDevice(CloudConfig& config)
     return sendMessage(dfx::api::web::Organizations::UnregisterLicense, request, response);
 }
 
-CloudStatus CloudWebSocket::validateToken(const CloudConfig& config, const std::string& userToken)
+CloudStatus CloudWebSocketProtobuf::validateToken(const CloudConfig& config, const std::string& userToken)
 {
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
 }
 
-CloudStatus CloudWebSocket::switchEffectiveOrganization(CloudConfig& config, const std::string& organizationID)
+CloudStatus CloudWebSocketProtobuf::switchEffectiveOrganization(CloudConfig& config, const std::string& organizationID)
 {
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
 }
 
-std::shared_ptr<DeviceAPI> CloudWebSocket::device(const CloudConfig& config)
+std::shared_ptr<DeviceAPI> CloudWebSocketProtobuf::device(const CloudConfig& config)
 {
-    return std::make_shared<DeviceWebSocket>(config, std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<DeviceWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-std::shared_ptr<LicenseAPI> CloudWebSocket::license(const CloudConfig& config)
+std::shared_ptr<LicenseAPI> CloudWebSocketProtobuf::license(const CloudConfig& config)
 {
-    return std::make_shared<LicenseWebSocket>(config, std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<LicenseWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-std::shared_ptr<MeasurementAPI> CloudWebSocket::measurement(const CloudConfig& config)
+std::shared_ptr<MeasurementAPI> CloudWebSocketProtobuf::measurement(const CloudConfig& config)
 {
-    return std::make_shared<MeasurementWebSocket>(config, std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<MeasurementWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-std::shared_ptr<MeasurementStreamAPI> CloudWebSocket::measurementStream(const CloudConfig& config)
+std::shared_ptr<MeasurementStreamAPI> CloudWebSocketProtobuf::measurementStream(const CloudConfig& config)
 {
-    return std::make_shared<MeasurementStreamWebSocket>(config,
-                                                        std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<MeasurementStreamWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-std::shared_ptr<OrganizationAPI> CloudWebSocket::organization(const CloudConfig& config)
+std::shared_ptr<OrganizationAPI> CloudWebSocketProtobuf::organization(const CloudConfig& config)
 {
-    return std::make_shared<OrganizationWebSocket>(config,
-                                                   std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<OrganizationWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-std::shared_ptr<ProfileAPI> CloudWebSocket::profile(const CloudConfig& config)
+std::shared_ptr<ProfileAPI> CloudWebSocketProtobuf::profile(const CloudConfig& config)
 {
-    return std::make_shared<ProfileWebSocket>(config, std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<ProfileWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-std::shared_ptr<StudyAPI> CloudWebSocket::study(const CloudConfig& config)
+std::shared_ptr<StudyAPI> CloudWebSocketProtobuf::study(const CloudConfig& config)
 {
-    return std::make_shared<StudyWebSocket>(config, std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<StudyWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-std::shared_ptr<UserAPI> CloudWebSocket::user(const CloudConfig& config)
+std::shared_ptr<UserAPI> CloudWebSocketProtobuf::user(const CloudConfig& config)
 {
-    return std::make_shared<UserWebSocket>(config, std::static_pointer_cast<CloudWebSocket>(shared_from_this()));
+    return std::make_shared<UserWebSocketProtobuf>(
+        config, std::static_pointer_cast<CloudWebSocketProtobuf>(shared_from_this()));
 }
 
-const std::string& CloudWebSocket::getTransportType()
+const std::string& CloudWebSocketProtobuf::getTransportType()
 {
-    return CloudAPI::TRANSPORT_TYPE_WEBSOCKET;
+    return CloudAPI::TRANSPORT_TYPE_WEBSOCKET_PROTOBUF;
 }
 
 //     *	status			| Description
@@ -572,7 +580,7 @@ const std::string& CloudWebSocket::getTransportType()
 //     *	MAINTENANCE		| Offline for maintenance
 //     *	ERROR			| Offline due to an error
 //     *	LATENCY			| API is experience latency or a general slowdown
-CloudStatus CloudWebSocket::getServerStatus(CloudConfig& config)
+CloudStatus CloudWebSocketProtobuf::getServerStatus(CloudConfig& config)
 {
     dfx::proto::general::StatusRequest request;
 

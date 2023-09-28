@@ -94,7 +94,7 @@ target_link_libraries(
           $<BUILD_INTERFACE:$<$<BOOL:${WITH_YAML}>:yaml-cpp::yaml-cpp>>
           $<BUILD_INTERFACE:$<$<BOOL:${WITH_GRPC}>:api-cpp-grpc>>
           $<BUILD_INTERFACE:$<$<BOOL:${WITH_REST}>:api-cpp-rest>>
-          $<BUILD_INTERFACE:$<$<BOOL:${WITH_WEBSOCKET}>:api-cpp-websocket>>)
+          $<BUILD_INTERFACE:$<$<BOOL:${WITH_WEBSOCKET_PROTOBUF}>:api-cpp-websocket-protobuf>>
 
 if(EMBED_CA_CERTS)
   embed_file("cacert" "${CMAKE_SOURCE_DIR}/resources/cacert.pem" cacert.c)
@@ -113,9 +113,9 @@ if(WITH_REST)
   target_compile_definitions(api-cpp PRIVATE WITH_REST)
 endif(WITH_REST)
 
-if(WITH_WEBSOCKET)
-  target_compile_definitions(api-cpp PRIVATE WITH_WEBSOCKET)
-endif(WITH_WEBSOCKET)
+if(WITH_WEBSOCKET_PROTOBUF)
+  target_compile_definitions(api-cpp PRIVATE WITH_WEBSOCKET_PROTOBUF)
+endif(WITH_WEBSOCKET_PROTOBUF)
 
 if(WITH_YAML)
   target_compile_definitions(api-cpp PRIVATE WITH_YAML)

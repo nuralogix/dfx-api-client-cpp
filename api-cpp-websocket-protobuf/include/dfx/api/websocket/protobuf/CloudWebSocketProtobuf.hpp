@@ -2,8 +2,8 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_WEBSOCKET_API_H
-#define DFX_API_CLOUD_WEBSOCKET_API_H
+#ifndef DFX_API_CLOUD_WEBSOCKET_PROTOBUF_H
+#define DFX_API_CLOUD_WEBSOCKET_PROTOBUF_H
 
 #include "dfx/api/CloudAPI.hpp"
 #include "dfx/api/CloudConfig.hpp"
@@ -19,25 +19,25 @@
 #include <string>
 
 extern "C" {
-void CloudWebSocketCallback(const dfx::websocket::WebSocketEvent&, void*);
+void CloudWebSocketProtobufCallback(const dfx::websocket::WebSocketEvent&, void*);
 }
 
-namespace dfx::api::websocket
+namespace dfx::api::websocket::protobuf
 {
-class MeasurementStreamWebSocket;
+class MeasurementStreamWebSocketProtobuf;
 
 /**
- * \class CloudWebSocket CloudWebSocket.h "dfx/api/websocket/CloudWebSocket.h"
+ * \class CloudWebSocketProtobuf CloudWebSocketProtobuf.h "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.h"
  *
- * \brief CloudWebSocketAPI provides a C++ class which communicates with the Nuralogix
- *        DFX API version 2 servers using WebSocket communications.
+ * \brief CloudWebSocketProtobuf provides a C++ class which communicates with the Nuralogix
+ *        DFX API version 2 servers using WebSocket Protobuf communications.
  */
-class CloudWebSocket : public CloudAPI
+class CloudWebSocketProtobuf : public CloudAPI
 {
 public:
-    explicit CloudWebSocket(const CloudConfig& config);
+    explicit CloudWebSocketProtobuf(const CloudConfig& config);
 
-    ~CloudWebSocket() override;
+    ~CloudWebSocketProtobuf() override;
 
     CloudStatus connect(const CloudConfig& config) override;
 
@@ -82,16 +82,16 @@ public:
     std::shared_ptr<UserAPI> user(const CloudConfig& config) override;
 
 private:
-    friend void ::CloudWebSocketCallback(const dfx::websocket::WebSocketEvent&, void*);
-    friend class DeviceWebSocket;
-    friend class LicenseWebSocket;
-    friend class MeasurementWebSocket;
-    friend class MeasurementStreamWebSocket;
-    friend class ProfileWebSocket;
-    friend class SignalWebSocket;
-    friend class StudyWebSocket;
-    friend class UserWebSocket;
-    friend class OrganizationWebSocket;
+    friend void ::CloudWebSocketProtobufCallback(const dfx::websocket::WebSocketEvent&, void*);
+    friend class DeviceWebSocketProtobuf;
+    friend class LicenseWebSocketProtobuf;
+    friend class MeasurementWebSocketProtobuf;
+    friend class MeasurementStreamWebSocketProtobuf;
+    friend class ProfileWebSocketProtobuf;
+    friend class SignalWebSocketProtobuf;
+    friend class StudyWebSocketProtobuf;
+    friend class UserWebSocketProtobuf;
+    friend class OrganizationWebSocketProtobuf;
 
     CloudStatus sendMessage(const dfx::api::web::WebServiceDetail& detail,
                             ::google::protobuf::Message& message,
@@ -102,7 +102,7 @@ private:
 
     CloudStatus decodeWebSocketError(const std::string& statusCode, const std::vector<uint8_t>& data);
 
-    void registerStream(const std::string& streamID, MeasurementStreamWebSocket* measurementStream);
+    void registerStream(const std::string& streamID, MeasurementStreamWebSocketProtobuf* measurementStream);
     void deregisterStream(const std::string& streamID);
 
 private:
@@ -116,11 +116,11 @@ private:
     std::atomic<int> lastTransactionID;
     std::mutex mutex;
     std::condition_variable cvServiceThread;
-    std::map<std::string, MeasurementStreamWebSocket*> streams;
+    std::map<std::string, MeasurementStreamWebSocketProtobuf*> streams;
     std::map<std::string, std::shared_ptr<std::condition_variable>> pending;
     std::map<std::string, std::shared_ptr<std::vector<uint8_t>>> responses;
 };
 
-} // namespace dfx::api::websocket
+} // namespace dfx::api::websocket::protobuf
 
-#endif // DFX_API_CLOUD_WEBSOCKET_API_H
+#endif // DFX_API_CLOUD_WEBSOCKET_PROTOBUF_H

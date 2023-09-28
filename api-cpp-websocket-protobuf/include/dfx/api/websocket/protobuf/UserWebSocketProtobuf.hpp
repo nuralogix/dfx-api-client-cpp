@@ -2,24 +2,24 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_USER_WEBSOCKET_H
-#define DFX_API_CLOUD_USER_WEBSOCKET_H
+#ifndef DFX_API_CLOUD_USER_WEBSOCKET_PROTOBUF_H
+#define DFX_API_CLOUD_USER_WEBSOCKET_PROTOBUF_H
 
 #include "dfx/api/UserAPI.hpp"
 
 #include <memory>
 
-namespace dfx::api::websocket
+namespace dfx::api::websocket::protobuf
 {
 
-class CloudWebSocket;
+class CloudWebSocketProtobuf;
 
-class UserWebSocket : public UserAPI
+class UserWebSocketProtobuf : public UserAPI
 {
 public:
-    UserWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket);
+    UserWebSocketProtobuf(const CloudConfig& config, std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocket);
 
-    ~UserWebSocket() override = default;
+    ~UserWebSocketProtobuf() override = default;
 
     CloudStatus create(const CloudConfig& config,
                        const std::string& email,
@@ -53,9 +53,9 @@ public:
     CloudStatus remove(const CloudConfig& config, const std::string& email, const std::string& userID) override;
 
 private:
-    std::shared_ptr<CloudWebSocket> cloudWebSocket;
+    std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf;
 };
 
-} // namespace dfx::api::websocket
+} // namespace dfx::api::websocket::protobuf
 
-#endif // DFX_API_CLOUD_USER_WEBSOCKET_H
+#endif // DFX_API_CLOUD_USER_WEBSOCKET_PROTOBUF_H

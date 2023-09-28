@@ -2,22 +2,23 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_ORGANIZATION_REST_H
-#define DFX_API_CLOUD_ORGANIZATION_REST_H
+#ifndef DFX_API_CLOUD_ORGANIZATIOH_WEBSOCKET_PROTOBUF_H
+#define DFX_API_CLOUD_ORGANIZATIOH_WEBSOCKET_PROTOBUF_H
 
 #include "dfx/api/OrganizationAPI.hpp"
 
-namespace dfx::api::websocket
+namespace dfx::api::websocket::protobuf
 {
 
-class CloudWebSocket;
+class CloudWebSocketProtobuf;
 
-class OrganizationWebSocket : public OrganizationAPI
+class OrganizationWebSocketProtobuf : public OrganizationAPI
 {
 public:
-    OrganizationWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket);
+    OrganizationWebSocketProtobuf(const CloudConfig& config,
+                                  std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf);
 
-    ~OrganizationWebSocket() override = default;
+    ~OrganizationWebSocketProtobuf() override = default;
 
     CloudStatus create(const CloudConfig& config,
                        const std::string& name,
@@ -45,9 +46,9 @@ private:
     CloudStatus getLogo(const CloudConfig& config, const std::string& ID, std::string& logo);
 
 private:
-    std::shared_ptr<CloudWebSocket> cloudWebSocket;
+    std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf;
 };
 
-} // namespace dfx::api::websocket
+} // namespace dfx::api::websocket::protobuf
 
-#endif // DFX_API_CLOUD_ORGANIZATION_REST_H
+#endif // DFX_API_CLOUD_ORGANIZATIOH_WEBSOCKET_PROTOBUF_H

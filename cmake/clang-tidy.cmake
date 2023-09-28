@@ -28,8 +28,8 @@ if(CLANG_TIDY_EXE)
     api-cpp-rest PROPERTIES CXX_CLANG_TIDY "${DO_CLANG_TIDY};--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy")
 
   set_target_properties(
-    api-cpp-websocket PROPERTIES CXX_CLANG_TIDY
-                                 "${DO_CLANG_TIDY};--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy")
+    api-cpp-websocket-protobuf PROPERTIES CXX_CLANG_TIDY
+                                          "${DO_CLANG_TIDY};--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy")
 
   if(WITH_VALIDATORS)
     set_target_properties(

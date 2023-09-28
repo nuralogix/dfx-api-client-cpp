@@ -146,7 +146,7 @@ TEST_F(UserTests, RetrieveUserSelf)
 
 TEST_F(UserTests, CreateUpdateRemoveUser)
 {
-    if (client->getTransportType().compare(CloudAPI::TRANSPORT_TYPE_WEBSOCKET) == 0) {
+    if (client->getTransportType().compare(CloudAPI::TRANSPORT_TYPE_WEBSOCKET_PROTOBUF) == 0) {
         GTEST_SKIP() << "WebSocket Users does not allow admin management (Organization) functionality";
     }
 

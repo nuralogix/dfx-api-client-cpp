@@ -2,22 +2,22 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_STUDY_WEBSOCKET_H
-#define DFX_API_CLOUD_STUDY_WEBSOCKET_H
+#ifndef DFX_API_CLOUD_STUDY_WEBSOCKET_PROTOBUF_H
+#define DFX_API_CLOUD_STUDY_WEBSOCKET_PROTOBUF_H
 
 #include "dfx/api/StudyAPI.hpp"
 
-namespace dfx::api::websocket
+namespace dfx::api::websocket::protobuf
 {
 
-class CloudWebSocket;
+class CloudWebSocketProtobuf;
 
-class StudyWebSocket : public StudyAPI
+class StudyWebSocketProtobuf : public StudyAPI
 {
 public:
-    StudyWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket);
+    StudyWebSocketProtobuf(const CloudConfig& config, std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf);
 
-    ~StudyWebSocket() override = default;
+    ~StudyWebSocketProtobuf() override = default;
 
     CloudStatus create(const CloudConfig& config,
                        const std::string& name,
@@ -63,9 +63,9 @@ public:
                                    std::list<StudyTemplate>& studyTemplates) override;
 
 private:
-    std::shared_ptr<CloudWebSocket> cloudWebSocket;
+    std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf;
 };
 
-} // namespace dfx::api::websocket
+} // namespace dfx::api::websocket::protobuf
 
-#endif // DFX_API_CLOUD_STUDY_WEBSOCKET_H
+#endif // DFX_API_CLOUD_STUDY_WEBSOCKET_PROTOBUF_H

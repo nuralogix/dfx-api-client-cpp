@@ -95,12 +95,12 @@ public:
 
     /**
      * \~english
-     * The WebSocket transport type.
+     * The WebSocket transport type with binary protobuf payloads.
      *
      * \~chinese
      * WebSocket传输类型。
      */
-    const static std::string TRANSPORT_TYPE_WEBSOCKET;
+    const static std::string TRANSPORT_TYPE_WEBSOCKET_PROTOBUF;
 
     /**
      * \~english

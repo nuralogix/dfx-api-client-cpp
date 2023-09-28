@@ -48,6 +48,9 @@ set(WITH_REST
 set(WITH_WEBSOCKET
     TRUE
     CACHE BOOL "Build with WebSocket support")
+set(WITH_WEBSOCKET_PROTOBUF
+    TRUE
+    CACHE BOOL "Buidl with WebSocket Protobuf support")
 set(WITH_VALIDATORS
     TRUE
     CACHE BOOL "Build with Validation support")
@@ -136,7 +139,7 @@ add_subdirectory(api-cpp-validator)
 add_subdirectory(api-cpp-grpc)
 add_subdirectory(api-cpp-rest)
 add_subdirectory(websocket) # Provide an implementation for api-cpp-websockets to use
-add_subdirectory(api-cpp-websocket)
+add_subdirectory(api-cpp-websocket-protobuf)
 add_subdirectory(doc)
 
 add_library(dfxcloud "")
@@ -165,7 +168,7 @@ target_link_libraries(
           $<$<BOOL:${WITH_GRPC}>:$<TARGET_OBJECTS:api-protos-grpc>>
           $<$<BOOL:${WITH_GRPC}>:$<TARGET_OBJECTS:api-cpp-grpc>>
           $<$<BOOL:${WITH_REST}>:$<TARGET_OBJECTS:api-cpp-rest>>
-          $<$<BOOL:${WITH_WEBSOCKET}>:$<TARGET_OBJECTS:api-cpp-websocket>>
+          $<$<BOOL:${WITH_WEBSOCKET_PROTOBUF}>:$<TARGET_OBJECTS:api-cpp-websocket-protobuf>>
           $<$<BOOL:${WITH_WEBSOCKET}>:$<TARGET_OBJECTS:websocket>>)
 
 # When not including gRPC, Undefined symbols for architecture arm64: "_CFRelease", referenced from:
@@ -287,9 +290,10 @@ message(STATUS "    SHARED_LIBS=${BUILD_SHARED_LIBS}")
 message(STATUS "")
 message(STATUS "    MEASUREMENT_ONLY=${MEASUREMENT_ONLY}")
 message(STATUS "    WITH_CURL=${WITH_CURL}")
+message(STATUS "    WITH_GRPC=${WITH_GRPC}")
 message(STATUS "    WITH_REST=${WITH_REST}")
 message(STATUS "    WITH_WEBSOCKET=${WITH_WEBSOCKET}")
-message(STATUS "    WITH_GRPC=${WITH_GRPC}")
+message(STATUS "    WITH_WEBSOCKET_PROTOBUF=${WITH_WEBSOCKET_PROTOBUF}")
 message(STATUS "    WITH_VALIDATORS=${WITH_VALIDATORS}")
 message(STATUS "")
 message(STATUS "    WITH_YAML=${WITH_YAML}")

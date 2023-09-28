@@ -1,27 +1,28 @@
 // Copyright (c) Nuralogix. All rights reserved. Licensed under the MIT license.
 // See LICENSE.txt in the project root for license information.
 
-#include "dfx/api/websocket/DeviceWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/DeviceWebSocketProtobuf.hpp"
 
 #include "dfx/api/validator/CloudValidator.hpp"
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 
 #include "dfx/proto/devices.pb.h"
 
 using namespace dfx::api;
-using namespace dfx::api::websocket;
+using namespace dfx::api::websocket::protobuf;
 
-DeviceWebSocket::DeviceWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket)
-    : cloudWebSocket(std::move(cloudWebSocket))
+DeviceWebSocketProtobuf::DeviceWebSocketProtobuf(const CloudConfig& config,
+                                                 std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf)
+    : cloudWebSocketProtobuf(std::move(cloudWebSocketProtobuf))
 {
 }
 
-CloudStatus DeviceWebSocket::create(const CloudConfig& config,
-                                    const std::string& name,
-                                    DeviceType type,
-                                    const std::string& identifier,
-                                    const std::string& version,
-                                    Device& device)
+CloudStatus DeviceWebSocketProtobuf::create(const CloudConfig& config,
+                                            const std::string& name,
+                                            DeviceType type,
+                                            const std::string& identifier,
+                                            const std::string& version,
+                                            Device& device)
 {
     DFX_CLOUD_VALIDATOR_MACRO(DeviceValidator, create(config, name, type, identifier, version, device));
 
@@ -36,7 +37,7 @@ CloudStatus DeviceWebSocket::create(const CloudConfig& config,
     request.set_identifier(identifier);
     request.set_version(version);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Devices::Create, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Devices::Create, request, response);
     if (status.OK()) {
         const auto& id = response.id();
         return retrieve(config, id, device);
@@ -44,11 +45,11 @@ CloudStatus DeviceWebSocket::create(const CloudConfig& config,
     return status;
 }
 
-CloudStatus DeviceWebSocket::list(const CloudConfig& config,
-                                  const std::unordered_map<DeviceFilter, std::string>& filters,
-                                  uint16_t offset,
-                                  std::vector<Device>& deviceList,
-                                  int16_t& totalCount)
+CloudStatus DeviceWebSocketProtobuf::list(const CloudConfig& config,
+                                          const std::unordered_map<DeviceFilter, std::string>& filters,
+                                          uint16_t offset,
+                                          std::vector<Device>& deviceList,
+                                          int16_t& totalCount)
 {
     DFX_CLOUD_VALIDATOR_MACRO(DeviceValidator, list(config, filters, offset, deviceList, totalCount));
 
@@ -70,7 +71,7 @@ CloudStatus DeviceWebSocket::list(const CloudConfig& config,
         }
     }
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Devices::List, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Devices::List, request, response);
     if (status.OK()) {
         for (int index = 0; index < response.values_size(); index++) {
             const auto& pbDevice = response.values(index);
@@ -92,7 +93,7 @@ CloudStatus DeviceWebSocket::list(const CloudConfig& config,
     return status;
 }
 
-CloudStatus DeviceWebSocket::retrieve(const CloudConfig& config, const std::string& deviceID, Device& device)
+CloudStatus DeviceWebSocketProtobuf::retrieve(const CloudConfig& config, const std::string& deviceID, Device& device)
 {
     DFX_CLOUD_VALIDATOR_MACRO(DeviceValidator, retrieve(config, deviceID, device));
 
@@ -101,7 +102,7 @@ CloudStatus DeviceWebSocket::retrieve(const CloudConfig& config, const std::stri
 
     request.mutable_params()->set_id(deviceID);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Devices::Retrieve, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Devices::Retrieve, request, response);
     if (status.OK()) {
         device.id = response.id();
         device.name = response.name();
@@ -116,7 +117,7 @@ CloudStatus DeviceWebSocket::retrieve(const CloudConfig& config, const std::stri
     return status;
 }
 
-CloudStatus DeviceWebSocket::update(const CloudConfig& config, const Device& device)
+CloudStatus DeviceWebSocketProtobuf::update(const CloudConfig& config, const Device& device)
 {
     DFX_CLOUD_VALIDATOR_MACRO(DeviceValidator, update(config, device));
 
@@ -131,10 +132,10 @@ CloudStatus DeviceWebSocket::update(const CloudConfig& config, const Device& dev
     request.set_version(device.version);
 
     // Server returns empty response
-    return cloudWebSocket->sendMessage(dfx::api::web::Devices::Update, request, response);
+    return cloudWebSocketProtobuf->sendMessage(dfx::api::web::Devices::Update, request, response);
 }
 
-CloudStatus DeviceWebSocket::remove(const CloudConfig& config, const std::string& deviceID)
+CloudStatus DeviceWebSocketProtobuf::remove(const CloudConfig& config, const std::string& deviceID)
 {
     DFX_CLOUD_VALIDATOR_MACRO(DeviceValidator, remove(config, deviceID));
 
@@ -144,5 +145,5 @@ CloudStatus DeviceWebSocket::remove(const CloudConfig& config, const std::string
     request.mutable_params()->set_id(deviceID);
 
     // Server returns empty response
-    return cloudWebSocket->sendMessage(dfx::api::web::Devices::Remove, request, response);
+    return cloudWebSocketProtobuf->sendMessage(dfx::api::web::Devices::Remove, request, response);
 }

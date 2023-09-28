@@ -1,10 +1,10 @@
 // Copyright (c) Nuralogix. All rights reserved. Licensed under the MIT license.
 // See LICENSE.txt in the project root for license information.
 
-#include "dfx/api/websocket/ProfileWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/ProfileWebSocketProtobuf.hpp"
 #include "dfx/api/validator/CloudValidator.hpp"
 #include "dfx/api/web/WebServiceDetail.hpp"
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 
 #include "dfx/proto/profiles.pb.h"
 
@@ -13,16 +13,19 @@
 #include <string>
 
 using namespace dfx::api;
-using namespace dfx::api::websocket;
+using namespace dfx::api::websocket::protobuf;
 using nlohmann::json;
 
-ProfileWebSocket::ProfileWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket)
-    : cloudWebSocket(std::move(cloudWebSocket))
+ProfileWebSocketProtobuf::ProfileWebSocketProtobuf(const CloudConfig& config,
+                                                   std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf)
+    : cloudWebSocketProtobuf(std::move(cloudWebSocketProtobuf))
 {
 }
 
-CloudStatus
-ProfileWebSocket::create(const CloudConfig& config, const std::string& name, const std::string& email, Profile& profile)
+CloudStatus ProfileWebSocketProtobuf::create(const CloudConfig& config,
+                                             const std::string& name,
+                                             const std::string& email,
+                                             Profile& profile)
 {
     dfx::proto::profiles::CreateRequest request;
     dfx::proto::profiles::CreateResponse response;
@@ -30,7 +33,7 @@ ProfileWebSocket::create(const CloudConfig& config, const std::string& name, con
     request.set_name(name);
     request.set_email(email);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Profiles::Create, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Profiles::Create, request, response);
     if (status.OK()) {
         auto profileID = response.id();
         return retrieve(config, profileID, profile);
@@ -38,11 +41,11 @@ ProfileWebSocket::create(const CloudConfig& config, const std::string& name, con
     return status;
 }
 
-CloudStatus ProfileWebSocket::list(const CloudConfig& config,
-                                   const std::unordered_map<ProfileFilter, std::string>& filters,
-                                   uint16_t offset,
-                                   std::vector<Profile>& profiles,
-                                   int16_t& totalCount)
+CloudStatus ProfileWebSocketProtobuf::list(const CloudConfig& config,
+                                           const std::unordered_map<ProfileFilter, std::string>& filters,
+                                           uint16_t offset,
+                                           std::vector<Profile>& profiles,
+                                           int16_t& totalCount)
 {
     // Static typing is not as nice as REST, need to break both into their own implementation here
     if (filters.find(ProfileFilter::AccountId) ==
@@ -71,7 +74,7 @@ CloudStatus ProfileWebSocket::list(const CloudConfig& config,
         query->set_limit(config.listLimit);
         query->set_offset(offset);
 
-        auto status = cloudWebSocket->sendMessage(dfx::api::web::Profiles::List, request, response);
+        auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Profiles::List, request, response);
         if (status.OK()) {
             if (response.values_size() > 0) {
                 totalCount = response.values_size();
@@ -119,7 +122,7 @@ CloudStatus ProfileWebSocket::list(const CloudConfig& config,
         query->set_limit(config.listLimit);
         query->set_offset(offset);
 
-        auto status = cloudWebSocket->sendMessage(dfx::api::web::Profiles::ListByUser, request, response);
+        auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Profiles::ListByUser, request, response);
         if (response.values_size() > 0) {
             totalCount = response.values_size();
             for (int i = 0; i < totalCount; i++) {
@@ -138,7 +141,9 @@ CloudStatus ProfileWebSocket::list(const CloudConfig& config,
     }
 }
 
-CloudStatus ProfileWebSocket::retrieve(const CloudConfig& config, const std::string& profileID, Profile& profile)
+CloudStatus ProfileWebSocketProtobuf::retrieve(const CloudConfig& config,
+                                               const std::string& profileID,
+                                               Profile& profile)
 {
     DFX_CLOUD_VALIDATOR_MACRO(ProfileValidator, retrieve(config, profileID, profile));
 
@@ -148,7 +153,7 @@ CloudStatus ProfileWebSocket::retrieve(const CloudConfig& config, const std::str
     auto params = request.mutable_params();
     params->set_id(profileID);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Profiles::Retrieve, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Profiles::Retrieve, request, response);
     if (status.OK()) {
         profile.id = profileID;
         profile.name = response.name();
@@ -160,7 +165,7 @@ CloudStatus ProfileWebSocket::retrieve(const CloudConfig& config, const std::str
     return status;
 }
 
-CloudStatus ProfileWebSocket::update(const CloudConfig& config, const Profile& profile)
+CloudStatus ProfileWebSocketProtobuf::update(const CloudConfig& config, const Profile& profile)
 {
     dfx::proto::profiles::UpdateRequest request;
     dfx::proto::profiles::UpdateResponse response;
@@ -171,11 +176,11 @@ CloudStatus ProfileWebSocket::update(const CloudConfig& config, const Profile& p
     request.set_name(profile.name);
     request.set_status(ProfileStatusMapper::getString(profile.status));
 
-    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Profiles::Update, request, response);
+    auto Status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Profiles::Update, request, response);
     return Status;
 }
 
-CloudStatus ProfileWebSocket::remove(const CloudConfig& config, const std::string& profileID)
+CloudStatus ProfileWebSocketProtobuf::remove(const CloudConfig& config, const std::string& profileID)
 {
     dfx::proto::profiles::RemoveRequest request;
     dfx::proto::profiles::RemoveResponse response;
@@ -183,6 +188,6 @@ CloudStatus ProfileWebSocket::remove(const CloudConfig& config, const std::strin
     auto params = request.mutable_params();
     params->set_id(profileID);
 
-    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Profiles::Remove, request, response);
+    auto Status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Profiles::Remove, request, response);
     return Status;
 }

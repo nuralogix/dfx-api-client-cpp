@@ -50,7 +50,7 @@ TEST_F(ProfileTests, listProfile)
         filters.emplace(ProfileAPI::ProfileFilter::ProfileName, profile.name);
 
         // WebSocket does not support a status filter
-        if (client->getTransportType().compare(CloudAPI::TRANSPORT_TYPE_WEBSOCKET) != 0) {
+        if (client->getTransportType().compare(CloudAPI::TRANSPORT_TYPE_WEBSOCKET_PROTOBUF) != 0) {
             filters.emplace(ProfileAPI::ProfileFilter::ProfileStatus, statusString);
         }
 

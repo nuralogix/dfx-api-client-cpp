@@ -41,7 +41,7 @@ TEST_F(StudyTests, ListStudyTemplates)
     }
 
     // Temporarily, skip this for now, server is returning "INCORRECT_REQUEST" on WebSocket
-    if ((client->getTransportType().compare(CloudAPI::TRANSPORT_TYPE_WEBSOCKET) == 0) &&
+    if ((client->getTransportType().compare(CloudAPI::TRANSPORT_TYPE_WEBSOCKET_PROTOBUF) == 0) &&
         (status.code == CLOUD_PARAMETER_VALIDATION_ERROR)) {
         GTEST_SKIP() << "StudyTests::ListStudyTemplates(): CLOUD_PARAMETER_VALIDATION_ERROR";
     }

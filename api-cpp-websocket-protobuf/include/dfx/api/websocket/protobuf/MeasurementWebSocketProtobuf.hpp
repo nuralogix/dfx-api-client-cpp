@@ -2,24 +2,25 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_MEASUREMENT_WEBSOCKET_H
-#define DFX_API_CLOUD_MEASUREMENT_WEBSOCKET_H
+#ifndef DFX_API_CLOUD_MEASUREMENT_WEBSOCKET_PROTOBUF_H
+#define DFX_API_CLOUD_MEASUREMENT_WEBSOCKET_PROTOBUF_H
 
 #include "dfx/api/MeasurementAPI.hpp"
 
 #include <memory>
 
-namespace dfx::api::websocket
+namespace dfx::api::websocket::protobuf
 {
 
-class CloudWebSocket;
+class CloudWebSocketProtobuf;
 
-class MeasurementWebSocket : public MeasurementAPI
+class MeasurementWebSocketProtobuf : public MeasurementAPI
 {
 public:
-    MeasurementWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket);
+    MeasurementWebSocketProtobuf(const CloudConfig& config,
+                                 std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf);
 
-    ~MeasurementWebSocket() override = default;
+    ~MeasurementWebSocketProtobuf() override = default;
 
     CloudStatus list(const CloudConfig& config,
                      const std::unordered_map<MeasurementFilter, std::string>& filters,
@@ -36,9 +37,9 @@ public:
                                  std::vector<Measurement>& measurements) override;
 
 private:
-    std::shared_ptr<CloudWebSocket> cloudWebSocket;
+    std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf;
 };
 
-} // namespace dfx::api::websocket
+} // namespace dfx::api::websocket::protobuf
 
-#endif // DFX_API_CLOUD_MEASUREMENT_WEBSOCKET_H
+#endif // DFX_API_CLOUD_MEASUREMENT_WEBSOCKET_PROTOBUF_H

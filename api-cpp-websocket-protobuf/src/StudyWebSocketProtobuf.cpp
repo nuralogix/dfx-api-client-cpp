@@ -1,10 +1,10 @@
 // Copyright (c) Nuralogix. All rights reserved. Licensed under the MIT license.
 // See LICENSE.txt in the project root for license information.
 
-#include "dfx/api/websocket/StudyWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/StudyWebSocketProtobuf.hpp"
 #include "dfx/api/validator/CloudValidator.hpp"
 #include "dfx/api/web/WebServiceDetail.hpp"
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 
 #include "nlohmann/json.hpp"
 #include <algorithm>
@@ -17,20 +17,21 @@
 #include "dfx/proto/studies.pb.h"
 
 using namespace dfx::api;
-using namespace dfx::api::websocket;
+using namespace dfx::api::websocket::protobuf;
 using nlohmann::json;
 
-StudyWebSocket::StudyWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket)
-    : cloudWebSocket(std::move(cloudWebSocket))
+StudyWebSocketProtobuf::StudyWebSocketProtobuf(const CloudConfig& config,
+                                               std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf)
+    : cloudWebSocketProtobuf(std::move(cloudWebSocketProtobuf))
 {
 }
 
-CloudStatus StudyWebSocket::create(const CloudConfig& config,
-                                   const std::string& name,
-                                   const std::string& description,
-                                   const std::string& templateID,
-                                   const std::map<std::string, std::string>& studyConfig,
-                                   std::string& studyID)
+CloudStatus StudyWebSocketProtobuf::create(const CloudConfig& config,
+                                           const std::string& name,
+                                           const std::string& description,
+                                           const std::string& templateID,
+                                           const std::map<std::string, std::string>& studyConfig,
+                                           std::string& studyID)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator, create(config, name, description, templateID, studyConfig, studyID));
     dfx::proto::studies::CreateRequest request;
@@ -41,24 +42,24 @@ CloudStatus StudyWebSocket::create(const CloudConfig& config,
     request.set_studytemplateid(templateID);
     auto studyconfig = request.config();
     studyconfig.insert(studyConfig.begin(), studyConfig.end());
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Studies::Create, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::Create, request, response);
     if (status.OK()) {
         studyID = response.id();
     }
     return status;
 }
 
-CloudStatus StudyWebSocket::list(const CloudConfig& config,
-                                 const std::unordered_map<StudyFilter, std::string>& filters,
-                                 uint16_t offset,
-                                 std::vector<Study>& studies,
-                                 int16_t& totalCount)
+CloudStatus StudyWebSocketProtobuf::list(const CloudConfig& config,
+                                         const std::unordered_map<StudyFilter, std::string>& filters,
+                                         uint16_t offset,
+                                         std::vector<Study>& studies,
+                                         int16_t& totalCount)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator, list(config, filters, offset, studies, totalCount));
 
     dfx::proto::studies::ListRequest request;
     dfx::proto::studies::ListResponse response;
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Studies::List, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::List, request, response);
     if (status.OK()) {
         const auto numberStudies = response.values_size();
         if (numberStudies == 0) {
@@ -79,7 +80,7 @@ CloudStatus StudyWebSocket::list(const CloudConfig& config,
     return status;
 }
 
-CloudStatus StudyWebSocket::retrieve(const CloudConfig& config, const std::string& studyID, Study& study)
+CloudStatus StudyWebSocketProtobuf::retrieve(const CloudConfig& config, const std::string& studyID, Study& study)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator, retrieve(config, studyID, study));
 
@@ -88,7 +89,7 @@ CloudStatus StudyWebSocket::retrieve(const CloudConfig& config, const std::strin
 
     request.mutable_params()->set_id(studyID);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Studies::Retrieve, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::Retrieve, request, response);
     if (status.OK()) {
         study.id = response.id();
         study.name = response.name();
@@ -103,9 +104,9 @@ CloudStatus StudyWebSocket::retrieve(const CloudConfig& config, const std::strin
     return status;
 }
 
-CloudStatus StudyWebSocket::retrieveMultiple(const CloudConfig& config,
-                                             const std::vector<std::string>& studyIDs,
-                                             std::vector<Study>& studies)
+CloudStatus StudyWebSocketProtobuf::retrieveMultiple(const CloudConfig& config,
+                                                     const std::vector<std::string>& studyIDs,
+                                                     std::vector<Study>& studies)
 {
     // Validate will occur by first retrieve call
 
@@ -126,11 +127,11 @@ CloudStatus StudyWebSocket::retrieveMultiple(const CloudConfig& config,
     return CloudStatus(CLOUD_OK);
 }
 
-CloudStatus StudyWebSocket::update(const CloudConfig& config,
-                                   const std::string& studyID,
-                                   const std::string& name,
-                                   const std::string& description,
-                                   StudyStatus status)
+CloudStatus StudyWebSocketProtobuf::update(const CloudConfig& config,
+                                           const std::string& studyID,
+                                           const std::string& name,
+                                           const std::string& description,
+                                           StudyStatus status)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator, update(config, studyID, name, description, status));
     dfx::proto::studies::UpdateRequest request;
@@ -139,26 +140,26 @@ CloudStatus StudyWebSocket::update(const CloudConfig& config,
     request.set_name(name);
     request.set_description(description);
     request.set_statusid(StudyStatusMapper::getString(status));
-    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Studies::Update, request, response);
+    auto Status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::Update, request, response);
     return Status;
 }
 
-CloudStatus StudyWebSocket::remove(const CloudConfig& config, const std::string& studyID)
+CloudStatus StudyWebSocketProtobuf::remove(const CloudConfig& config, const std::string& studyID)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator, remove(config, studyID));
     dfx::proto::studies::RemoveRequest request;
     dfx::proto::studies::RemoveResponse response;
     request.mutable_params()->set_id(studyID);
-    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Studies::Remove, request, response);
+    auto Status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::Remove, request, response);
     return Status;
 }
 
-CloudStatus StudyWebSocket::retrieveStudyConfig(const CloudConfig& config,
-                                                const std::string& studyID,
-                                                const std::string& sdkID,
-                                                const std::string& currentHashID,
-                                                std::vector<uint8_t>& studyData,
-                                                std::string& hashID)
+CloudStatus StudyWebSocketProtobuf::retrieveStudyConfig(const CloudConfig& config,
+                                                        const std::string& studyID,
+                                                        const std::string& sdkID,
+                                                        const std::string& currentHashID,
+                                                        std::vector<uint8_t>& studyData,
+                                                        std::string& hashID)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator,
                               retrieveStudyConfig(config, studyID, sdkID, currentHashID, studyData, hashID));
@@ -169,7 +170,7 @@ CloudStatus StudyWebSocket::retrieveStudyConfig(const CloudConfig& config,
     request.set_sdkid(sdkID);
     request.set_studyid(studyID);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Studies::GetConfig, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::GetConfig, request, response);
     if (status.OK()) {
         hashID = response.md5hash();
 
@@ -195,15 +196,15 @@ CloudStatus StudyWebSocket::retrieveStudyConfig(const CloudConfig& config,
     return status;
 }
 
-CloudStatus StudyWebSocket::retrieveStudyTypes(const CloudConfig& config,
-                                               const StudyStatus status,
-                                               std::list<StudyType>& studyTypes)
+CloudStatus StudyWebSocketProtobuf::retrieveStudyTypes(const CloudConfig& config,
+                                                       const StudyStatus status,
+                                                       std::list<StudyType>& studyTypes)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator, retrieveStudyTypes(config, status, studyTypes));
 
     dfx::proto::studies::TypesRequest request;
     dfx::proto::studies::TypesResponse response;
-    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Studies::Types, request, response);
+    auto Status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::Types, request, response);
     if (Status.OK()) {
         for (auto index = 0; index < response.values_size(); index++) {
             const auto& listResponse = response.values(index);
@@ -220,16 +221,16 @@ CloudStatus StudyWebSocket::retrieveStudyTypes(const CloudConfig& config,
     return Status;
 }
 
-CloudStatus StudyWebSocket::listStudyTemplates(const CloudConfig& config,
-                                               const StudyStatus status,
-                                               const std::string& type,
-                                               std::list<StudyTemplate>& studyTemplates)
+CloudStatus StudyWebSocketProtobuf::listStudyTemplates(const CloudConfig& config,
+                                                       const StudyStatus status,
+                                                       const std::string& type,
+                                                       std::list<StudyTemplate>& studyTemplates)
 {
     DFX_CLOUD_VALIDATOR_MACRO(StudyValidator, listStudyTemplates(config, status, type, studyTemplates));
 
     dfx::proto::studies::TemplatesRequest request;
     dfx::proto::studies::TemplatesResponse response;
-    auto Status = cloudWebSocket->sendMessage(dfx::api::web::Studies::RetrieveTemplates, request, response);
+    auto Status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Studies::RetrieveTemplates, request, response);
     if (Status.OK()) {
         for (auto index = 0; index < response.values_size(); index++) {
             const auto& listResponse = response.values(index);

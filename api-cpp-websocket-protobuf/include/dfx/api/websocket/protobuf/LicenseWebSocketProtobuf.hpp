@@ -2,8 +2,8 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_LICENSE_WEBSOCKET_H
-#define DFX_API_CLOUD_LICENSE_WEBSOCKET_H
+#ifndef DFX_API_CLOUD_LICENSE_WEBSOCKET_PROTOBUF_H
+#define DFX_API_CLOUD_LICENSE_WEBSOCKET_PROTOBUF_H
 
 #include "dfx/api/CloudConfig.hpp"
 #include "dfx/api/CloudStatus.hpp"
@@ -15,17 +15,17 @@
 #include <memory>
 #include <string>
 
-namespace dfx::api::websocket
+namespace dfx::api::websocket::protobuf
 {
 
-class CloudWebSocket;
+class CloudWebSocketProtobuf;
 
-class LicenseWebSocket : public LicenseAPI
+class LicenseWebSocketProtobuf : public LicenseAPI
 {
 public:
-    LicenseWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket);
+    LicenseWebSocketProtobuf(const CloudConfig& config, std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf);
 
-    ~LicenseWebSocket() = default;
+    ~LicenseWebSocketProtobuf() = default;
 
     CloudStatus list(const CloudConfig& config,
                      const std::unordered_map<LicenseFilter, std::string>& filters,
@@ -34,9 +34,9 @@ public:
                      int16_t& totalCount) override;
 
 private:
-    std::shared_ptr<CloudWebSocket> cloudWebSocket;
+    std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf;
 };
 
-} // namespace dfx::api::websocket
+} // namespace dfx::api::websocket::protobuf
 
-#endif // DFX_API_CLOUD_LICENSE_WEBSOCKET_H
+#endif // DFX_API_CLOUD_LICENSE_WEBSOCKET_PROTOBUF_H

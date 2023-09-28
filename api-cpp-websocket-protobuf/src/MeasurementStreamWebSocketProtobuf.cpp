@@ -1,10 +1,10 @@
 // Copyright (c) Nuralogix. All rights reserved. Licensed under the MIT license.
 // See LICENSE.txt in the project root for license information.
 
-#include "dfx/api/websocket/MeasurementStreamWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/MeasurementStreamWebSocketProtobuf.hpp"
 #include "dfx/api/CloudLog.hpp"
 #include "dfx/api/validator/CloudValidator.hpp"
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 
 #include "dfx/proto/measurements.pb.h"
 
@@ -19,23 +19,23 @@ using dfx::api::CloudStatus;
 using dfx::api::MeasurementStreamAPI;
 
 using namespace dfx::api;
-using namespace dfx::api::websocket;
+using namespace dfx::api::websocket::protobuf;
 
 using namespace std::chrono_literals;
 
-MeasurementStreamWebSocket::MeasurementStreamWebSocket(const CloudConfig& config,
-                                                       const std::shared_ptr<CloudWebSocket>& cloudWebSocket)
-    : cloudWebSocket(std::move(cloudWebSocket))
+MeasurementStreamWebSocketProtobuf::MeasurementStreamWebSocketProtobuf(
+    const CloudConfig& config, const std::shared_ptr<CloudWebSocketProtobuf>& cloudWebSocketProtobuf)
+    : cloudWebSocketProtobuf(std::move(cloudWebSocketProtobuf))
 {
     initialize();
 }
 
-MeasurementStreamWebSocket::~MeasurementStreamWebSocket()
+MeasurementStreamWebSocketProtobuf::~MeasurementStreamWebSocketProtobuf()
 {
     closeStream();
 }
 
-void MeasurementStreamWebSocket::initialize()
+void MeasurementStreamWebSocketProtobuf::initialize()
 {
     streamOpen = false;
     measurementID = "";
@@ -46,9 +46,9 @@ void MeasurementStreamWebSocket::initialize()
     chunksOutstanding = 0;
 }
 
-CloudStatus MeasurementStreamWebSocket::setupStream(const CloudConfig& config,
-                                                    const std::string& studyID,
-                                                    const std::map<CreateProperty, std::string>& properties)
+CloudStatus MeasurementStreamWebSocketProtobuf::setupStream(const CloudConfig& config,
+                                                            const std::string& studyID,
+                                                            const std::map<CreateProperty, std::string>& properties)
 {
     DFX_CLOUD_VALIDATOR_MACRO(MeasurementStreamValidator, setupStream(config, studyID));
 
@@ -130,7 +130,7 @@ CloudStatus MeasurementStreamWebSocket::setupStream(const CloudConfig& config,
         }
 
         request.set_studyid(studyID);
-        auto status = cloudWebSocket->sendMessage(dfx::api::web::Measurements::Create, request, response);
+        auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Measurements::Create, request, response);
         if (!status.OK()) {
             return status;
         }
@@ -149,8 +149,9 @@ CloudStatus MeasurementStreamWebSocket::setupStream(const CloudConfig& config,
         request.mutable_params()->set_id(measurementID);
         request.set_requestid(requestID);
 
-        cloudWebSocket->registerStream(requestID, this);
-        auto status = cloudWebSocket->sendMessage(dfx::api::web::Measurements::SubscribeResults, request, response);
+        cloudWebSocketProtobuf->registerStream(requestID, this);
+        auto status =
+            cloudWebSocketProtobuf->sendMessage(dfx::api::web::Measurements::SubscribeResults, request, response);
         if (!status.OK()) {
             closeStream();
             return status;
@@ -161,7 +162,7 @@ CloudStatus MeasurementStreamWebSocket::setupStream(const CloudConfig& config,
     return CloudStatus(CLOUD_OK);
 }
 
-CloudStatus MeasurementStreamWebSocket::closeStream()
+CloudStatus MeasurementStreamWebSocketProtobuf::closeStream()
 {
     // NOTE: This method is used by the serviceThread to close the measurement.
     // It MUST NOT explicitly call webSocket->close() which would dead lock join()
@@ -170,9 +171,9 @@ CloudStatus MeasurementStreamWebSocket::closeStream()
     return closeMeasurement(CloudStatus(CLOUD_OK));
 }
 
-CloudStatus MeasurementStreamWebSocket::sendChunk(const CloudConfig& config,
-                                                  const std::vector<uint8_t>& chunk,
-                                                  bool isLastChunk)
+CloudStatus MeasurementStreamWebSocketProtobuf::sendChunk(const CloudConfig& config,
+                                                          const std::vector<uint8_t>& chunk,
+                                                          bool isLastChunk)
 {
     CloudStatus status(CLOUD_OK);
 
@@ -199,7 +200,7 @@ CloudStatus MeasurementStreamWebSocket::sendChunk(const CloudConfig& config,
     const std::string payload(chunk.begin(), chunk.end());
     request.set_payload(payload);
 
-    status = cloudWebSocket->sendMessage(dfx::api::web::Measurements::Data, request, response);
+    status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Measurements::Data, request, response);
     if (!status.OK()) {
         cloudLog(CLOUD_LOG_LEVEL_WARNING, "WEB: Send not okay %d: %s", status.code, status.message.c_str());
 
@@ -212,7 +213,7 @@ CloudStatus MeasurementStreamWebSocket::sendChunk(const CloudConfig& config,
     return CloudStatus(CLOUD_OK);
 }
 
-CloudStatus MeasurementStreamWebSocket::cancel(const CloudConfig& config)
+CloudStatus MeasurementStreamWebSocketProtobuf::cancel(const CloudConfig& config)
 {
     CloudStatus status(CLOUD_OK);
     std::unique_lock<std::recursive_mutex> lock(mutex);
@@ -225,7 +226,7 @@ CloudStatus MeasurementStreamWebSocket::cancel(const CloudConfig& config)
     return status;
 }
 
-void MeasurementStreamWebSocket::handleStreamResponse(const std::shared_ptr<std::vector<uint8_t>>& message)
+void MeasurementStreamWebSocketProtobuf::handleStreamResponse(const std::shared_ptr<std::vector<uint8_t>>& message)
 {
     // This is a stream response, need to decode enough of it to decide what type
     // of stream response we are being sent.
@@ -240,7 +241,7 @@ void MeasurementStreamWebSocket::handleStreamResponse(const std::shared_ptr<std:
 
     // Request is considered OK
     if (statusCode != "200") {
-        auto status = cloudWebSocket->decodeWebSocketError(
+        auto status = cloudWebSocketProtobuf->decodeWebSocketError(
             statusCode, std::vector<uint8_t>(rawData + 13, rawData + messageSize - 13));
         cloudLog(CLOUD_LOG_LEVEL_WARNING, "WEB: Response status bad %d: %s", status.code, status.message.c_str());
         closeMeasurement(status);

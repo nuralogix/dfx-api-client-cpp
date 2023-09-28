@@ -2,26 +2,26 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_DEVICE_WEBSOCKET_H
-#define DFX_API_CLOUD_DEVICE_WEBSOCKET_H
+#ifndef DFX_API_CLOUD_DEVICE_WEBSOCKET_PROTOBUF_H
+#define DFX_API_CLOUD_DEVICE_WEBSOCKET_PROTOBUF_H
 
 #include "dfx/api/CloudConfig.hpp"
 #include "dfx/api/DeviceAPI.hpp"
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 
 #include <memory>
 
-namespace dfx::api::websocket
+namespace dfx::api::websocket::protobuf
 {
 
-class CloudWebSocket;
+class CloudWebSocketProtobuf;
 
-class DeviceWebSocket : public DeviceAPI
+class DeviceWebSocketProtobuf : public DeviceAPI
 {
 public:
-    DeviceWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket);
+    DeviceWebSocketProtobuf(const CloudConfig& config, std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf);
 
-    ~DeviceWebSocket() override = default;
+    ~DeviceWebSocketProtobuf() override = default;
 
     CloudStatus create(const CloudConfig& config,
                        const std::string& name,
@@ -43,9 +43,9 @@ public:
     CloudStatus remove(const CloudConfig& config, const std::string& deviceID) override;
 
 private:
-    std::shared_ptr<CloudWebSocket> cloudWebSocket;
+    std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf;
 };
 
-} // namespace dfx::api::websocket
+} // namespace dfx::api::websocket::protobuf
 
-#endif // DFX_API_CLOUD_DEVICE_WEBSOCKET_H
+#endif // DFX_API_CLOUD_DEVICE_WEBSOCKET_PROTOBUF_H

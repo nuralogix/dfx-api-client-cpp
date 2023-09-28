@@ -1,33 +1,34 @@
 // Copyright (c) Nuralogix. All rights reserved. Licensed under the MIT license.
 // See LICENSE.txt in the project root for license information.
 
-#include "dfx/api/websocket/UserWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/UserWebSocketProtobuf.hpp"
 #include "dfx/api/validator/CloudValidator.hpp"
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 
 #include "dfx/proto/organizations.pb.h"
 #include "dfx/proto/users.pb.h"
 
 using namespace dfx::api;
-using namespace dfx::api::websocket;
+using namespace dfx::api::websocket::protobuf;
 
-UserWebSocket::UserWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket)
-    : cloudWebSocket(std::move(cloudWebSocket))
+UserWebSocketProtobuf::UserWebSocketProtobuf(const CloudConfig& config,
+                                             std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf)
+    : cloudWebSocketProtobuf(std::move(cloudWebSocketProtobuf))
 {
 }
 
-CloudStatus UserWebSocket::create(const CloudConfig& config,
-                                  const std::string& email,
-                                  const std::string& password,
-                                  const std::string& role,
-                                  const std::string& firstName,
-                                  const std::string& lastName,
-                                  const std::string& phoneNumber,
-                                  const std::string& gender,
-                                  const std::string& dateOfBirth,
-                                  const uint16_t heightCM,
-                                  const uint16_t weightKG,
-                                  std::string& userID)
+CloudStatus UserWebSocketProtobuf::create(const CloudConfig& config,
+                                          const std::string& email,
+                                          const std::string& password,
+                                          const std::string& role,
+                                          const std::string& firstName,
+                                          const std::string& lastName,
+                                          const std::string& phoneNumber,
+                                          const std::string& gender,
+                                          const std::string& dateOfBirth,
+                                          const uint16_t heightCM,
+                                          const uint16_t weightKG,
+                                          std::string& userID)
 {
     DFX_CLOUD_VALIDATOR_MACRO(UserValidator,
                               create(config,
@@ -56,25 +57,25 @@ CloudStatus UserWebSocket::create(const CloudConfig& config,
     request.set_heightcm(heightCM);
     request.set_weightkg(weightKG);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Users::Create, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Users::Create, request, response);
     if (status.OK()) {
         userID = response.id();
     }
     return status;
 }
 
-CloudStatus UserWebSocket::list(const CloudConfig& config,
-                                const std::unordered_map<UserFilter, std::string>& filters,
-                                uint16_t offset,
-                                std::vector<User>& users,
-                                int16_t& totalCount)
+CloudStatus UserWebSocketProtobuf::list(const CloudConfig& config,
+                                        const std::unordered_map<UserFilter, std::string>& filters,
+                                        uint16_t offset,
+                                        std::vector<User>& users,
+                                        int16_t& totalCount)
 {
     DFX_CLOUD_VALIDATOR_MACRO(UserValidator, list(config, filters, offset, users, totalCount));
     dfx::proto::organizations::UsersRequest request;
     dfx::proto::organizations::UsersResponse response;
 
     totalCount = -1;
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Organizations::Users, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Organizations::Users, request, response);
     if (status.OK()) {
         for (auto index = 0; index < response.users_size(); index++) {
             const auto& user = response.users(index);
@@ -92,13 +93,13 @@ CloudStatus UserWebSocket::list(const CloudConfig& config,
     return status;
 }
 
-CloudStatus UserWebSocket::retrieve(const CloudConfig& config, User& user)
+CloudStatus UserWebSocketProtobuf::retrieve(const CloudConfig& config, User& user)
 {
     DFX_CLOUD_VALIDATOR_MACRO(UserValidator, retrieve(config, user));
     dfx::proto::users::RetrieveRequest request;
     dfx::proto::users::RetrieveResponse response;
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Users::Retrieve, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Users::Retrieve, request, response);
     if (status.OK()) {
         user.id = response.id();
         user.firstName = response.firstname();
@@ -121,7 +122,7 @@ CloudStatus UserWebSocket::retrieve(const CloudConfig& config, User& user)
     return status;
 }
 
-CloudStatus UserWebSocket::update(const CloudConfig& config, const User& user)
+CloudStatus UserWebSocketProtobuf::update(const CloudConfig& config, const User& user)
 {
     DFX_CLOUD_VALIDATOR_MACRO(UserValidator, update(config, user));
     dfx::proto::users::UpdateRequest request;
@@ -137,18 +138,20 @@ CloudStatus UserWebSocket::update(const CloudConfig& config, const User& user)
     request.set_heightcm(user.heightCM);
     request.set_weightkg(user.weightKG);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Users::Update, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Users::Update, request, response);
     return status;
 }
 
-CloudStatus
-UserWebSocket::retrieve(const CloudConfig& config, const std::string& userID, const std::string& email, User& user)
+CloudStatus UserWebSocketProtobuf::retrieve(const CloudConfig& config,
+                                            const std::string& userID,
+                                            const std::string& email,
+                                            User& user)
 {
     DFX_CLOUD_VALIDATOR_MACRO(UserValidator, retrieve(config, userID, email, user));
     dfx::proto::users::RetrieveRequest request;
     dfx::proto::users::RetrieveResponse response;
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Users::Retrieve, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Users::Retrieve, request, response);
     if (status.OK()) {
         user.id = response.id();
         user.firstName = response.firstname();
@@ -171,8 +174,10 @@ UserWebSocket::retrieve(const CloudConfig& config, const std::string& userID, co
     return status;
 }
 
-CloudStatus
-UserWebSocket::update(const CloudConfig& config, const std::string& userID, const std::string& email, const User& user)
+CloudStatus UserWebSocketProtobuf::update(const CloudConfig& config,
+                                          const std::string& userID,
+                                          const std::string& email,
+                                          const User& user)
 {
     DFX_CLOUD_VALIDATOR_MACRO(UserValidator, update(config, userID, email, user));
     dfx::proto::users::UpdateRequest request;
@@ -188,16 +193,18 @@ UserWebSocket::update(const CloudConfig& config, const std::string& userID, cons
     request.set_heightcm(user.heightCM);
     request.set_weightkg(user.weightKG);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Users::Update, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Users::Update, request, response);
     return status;
 }
 
-CloudStatus UserWebSocket::remove(const CloudConfig& config, const std::string& email, const std::string& userID)
+CloudStatus UserWebSocketProtobuf::remove(const CloudConfig& config,
+                                          const std::string& email,
+                                          const std::string& userID)
 {
     DFX_CLOUD_VALIDATOR_MACRO(UserValidator, remove(config, email, userID));
     dfx::proto::users::RemoveRequest request;
     dfx::proto::users::RemoveResponse response;
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Users::Remove, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Users::Remove, request, response);
     return status;
 }

@@ -1,9 +1,9 @@
 // Copyright (c) Nuralogix. All rights reserved. Licensed under the MIT license.
 // See LICENSE.txt in the project root for license information.
 
-#include "dfx/api/websocket/MeasurementWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/MeasurementWebSocketProtobuf.hpp"
 #include "dfx/api/validator/CloudValidator.hpp"
-#include "dfx/api/websocket/CloudWebSocket.hpp"
+#include "dfx/api/websocket/protobuf/CloudWebSocketProtobuf.hpp"
 
 #include "dfx/proto/measurements.pb.h"
 #include <google/protobuf/util/json_util.h>
@@ -13,19 +13,20 @@
 #include <string>
 
 using namespace dfx::api;
-using namespace dfx::api::websocket;
+using namespace dfx::api::websocket::protobuf;
 using nlohmann::json;
 
-MeasurementWebSocket::MeasurementWebSocket(const CloudConfig& config, std::shared_ptr<CloudWebSocket> cloudWebSocket)
-    : cloudWebSocket(std::move(cloudWebSocket))
+MeasurementWebSocketProtobuf::MeasurementWebSocketProtobuf(
+    const CloudConfig& config, std::shared_ptr<CloudWebSocketProtobuf> cloudWebSocketProtobuf)
+    : cloudWebSocketProtobuf(std::move(cloudWebSocketProtobuf))
 {
 }
 
-CloudStatus MeasurementWebSocket::list(const CloudConfig& config,
-                                       const std::unordered_map<MeasurementFilter, std::string>& filters,
-                                       uint16_t offset,
-                                       std::vector<Measurement>& measurements,
-                                       int16_t& totalCount)
+CloudStatus MeasurementWebSocketProtobuf::list(const CloudConfig& config,
+                                               const std::unordered_map<MeasurementFilter, std::string>& filters,
+                                               uint16_t offset,
+                                               std::vector<Measurement>& measurements,
+                                               int16_t& totalCount)
 {
     DFX_CLOUD_VALIDATOR_MACRO(MeasurementValidator, list(config, filters, offset, measurements, totalCount));
 
@@ -36,7 +37,7 @@ CloudStatus MeasurementWebSocket::list(const CloudConfig& config,
     dfx::proto::measurements::ListRequest request;
 
     dfx::proto::measurements::ListResponse response;
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Measurements::List, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Measurements::List, request, response);
     if (status.OK()) {
         for (int index = 0; index < response.values_size(); index++) {
             const auto& pbMeasurement = response.values(index);
@@ -64,9 +65,9 @@ CloudStatus MeasurementWebSocket::list(const CloudConfig& config,
     return CloudStatus(CLOUD_OK);
 }
 
-CloudStatus MeasurementWebSocket::retrieve(const CloudConfig& config,
-                                           const std::string& measurementID,
-                                           Measurement& measurementData)
+CloudStatus MeasurementWebSocketProtobuf::retrieve(const CloudConfig& config,
+                                                   const std::string& measurementID,
+                                                   Measurement& measurementData)
 {
     DFX_CLOUD_VALIDATOR_MACRO(MeasurementValidator, retrieve(config, measurementID, measurementData));
 
@@ -75,7 +76,7 @@ CloudStatus MeasurementWebSocket::retrieve(const CloudConfig& config,
 
     request.mutable_params()->set_id(measurementID);
 
-    auto status = cloudWebSocket->sendMessage(dfx::api::web::Measurements::Retrieve, request, response);
+    auto status = cloudWebSocketProtobuf->sendMessage(dfx::api::web::Measurements::Retrieve, request, response);
     if (status.OK()) {
         measurementData.studyID = response.studyid();
         measurementData.statusID = response.statusid();
@@ -102,9 +103,9 @@ CloudStatus MeasurementWebSocket::retrieve(const CloudConfig& config,
     return status;
 }
 
-CloudStatus MeasurementWebSocket::retrieveMultiple(const CloudConfig& config,
-                                                   const std::vector<std::string>& measurementIDs,
-                                                   std::vector<Measurement>& measurements)
+CloudStatus MeasurementWebSocketProtobuf::retrieveMultiple(const CloudConfig& config,
+                                                           const std::vector<std::string>& measurementIDs,
+                                                           std::vector<Measurement>& measurements)
 {
     DFX_CLOUD_VALIDATOR_MACRO(MeasurementValidator, retrieveMultiple(config, measurementIDs, measurements));
 

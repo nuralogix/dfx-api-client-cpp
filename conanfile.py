@@ -78,7 +78,7 @@ class dfxcloud(ConanFile):
     def export_sources(self):
         copy(self, ".*", src=self.recipe_folder, dst=self.export_sources_folder, keep_path=True)  # May need .clang-tidy, etc.
         copy(self, "CMakeLists.txt", src=self.recipe_folder, dst=self.export_sources_folder, keep_path=True)
-        for folder in ["api-cpp", "api-cpp-grpc", "api-cpp-rest", "api-cpp-validator", "api-cpp-websocket", "api-protos-grpc",
+        for folder in ["api-cpp", "api-cpp-grpc", "api-cpp-rest", "api-cpp-validator", "api-cpp-websocket-protobuf", "api-protos-grpc",
                         "api-protos-web", "api-utils", "cmake", "doc", "licenses", "resources", "test", "test_data", "tool-dfxcli", "websocket"]:
             copy(self, "*", src=os.path.join(self.recipe_folder, folder), dst=os.path.join(self.export_sources_folder, folder), keep_path=True)
 
