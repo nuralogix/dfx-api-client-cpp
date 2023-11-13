@@ -30,7 +30,7 @@ CloudStatus OrganizationWebSocketProtobuf::create(const CloudConfig& config,
                                                   std::string& organizationID)
 {
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE,
-                       fmt::format("{} does not support {} end-point", "WebSocket", "organization create"));
+                       fmt::format("{} does not support {} end-point", "WebSocketProtobuf", "organization create"));
 }
 
 CloudStatus OrganizationWebSocketProtobuf::list(const CloudConfig& config,
@@ -40,7 +40,7 @@ CloudStatus OrganizationWebSocketProtobuf::list(const CloudConfig& config,
                                                 int16_t& totalCount)
 {
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE,
-                       fmt::format("{} does not support {} end-point", "WebSocket", "organization list"));
+                       fmt::format("{} does not support {} end-point", "WebSocketProtobuf", "organization list"));
 }
 
 CloudStatus OrganizationWebSocketProtobuf::retrieve(const CloudConfig& config,
@@ -69,13 +69,13 @@ CloudStatus OrganizationWebSocketProtobuf::retrieve(const CloudConfig& config,
 CloudStatus OrganizationWebSocketProtobuf::update(const CloudConfig& config, Organization& organization)
 {
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE,
-                       fmt::format("{} does not support {} end-point", "WebSocket", "organization update"));
+                       fmt::format("{} does not support {} end-point", "WebSocketProtobuf", "organization update"));
 }
 
 CloudStatus OrganizationWebSocketProtobuf::remove(const CloudConfig& config, const std::string& organizationID)
 {
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE,
-                       fmt::format("{} does not support {} end-point", "WebSocket", "organization remove"));
+                       fmt::format("{} does not support {} end-point", "WebSocketProtobuf", "organization remove"));
 }
 
 CloudStatus OrganizationWebSocketProtobuf::getLogo(const CloudConfig& config, const std::string& ID, std::string& logo)
@@ -90,4 +90,58 @@ CloudStatus OrganizationWebSocketProtobuf::getLogo(const CloudConfig& config, co
         return status;
     }
     return status;
+}
+
+CloudStatus OrganizationWebSocketProtobuf::listUsers(const CloudConfig& config,
+                                                 const std::unordered_map<dfx::api::UserAPI::UserFilter, std::string>& filters,
+                                                 uint16_t offset,
+                                                 std::vector<User>& users,
+                                                 int16_t& totalCount) {
+    DFX_CLOUD_VALIDATOR_MACRO(OrganizationValidator, listUsers(config, filters, offset, users, totalCount));
+
+    dfx::proto::organizations::UsersRequest request;
+    dfx::proto::organizations::UsersResponse response;
+
+    auto result = cloudWebSocketProtobuf->sendMessage( web::Organizations::Users, request, response);
+
+    if (result.OK()) {
+        for (const auto &userProto: response.users() ) {
+            User user;
+            user.id = userProto.id();
+            user.firstName = userProto.firstname();
+            user.lastName = userProto.lastname();
+            user.email = userProto.email();
+            user.gender = userProto.gender();
+            user.dateOfBirth = userProto.dateofbirth();
+            users.push_back(user);
+        }
+    }
+    return result;
+}
+
+CloudStatus OrganizationWebSocketProtobuf::createUser(const CloudConfig& config, User& user) {
+    return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
+}
+
+CloudStatus OrganizationWebSocketProtobuf::retrieveUser(const CloudConfig& config,
+                                            const std::string& userID,
+                                            const std::string& email,
+                                            User& user)
+{
+    return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
+}
+
+CloudStatus OrganizationWebSocketProtobuf::updateUser(const CloudConfig& config,
+                                          const std::string& userID,
+                                          const std::string& email,
+                                          const User& user)
+{
+    return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
+}
+
+CloudStatus OrganizationWebSocketProtobuf::removeUser(const CloudConfig& config,
+                                          const std::string& email,
+                                          const std::string& userID)
+{
+    return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
 }

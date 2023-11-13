@@ -107,7 +107,7 @@ gtest:
 
 libcurl:
   name: "libcurl"
-  version: "8.1.2"
+  version: "8.2.1"
   source: "conan-center-index"
   recipe: "conan/recipes/libcurl/all"
 
@@ -138,7 +138,7 @@ nlohmann_json:
 # but they appear to work fine in Release.
 openssl:
   name: "openssl"
-  version: "3.1.1"
+  version: "3.0.9"
   source: "conan-center-index"
   recipe: "conan/recipes/openssl/3.x.x"
 

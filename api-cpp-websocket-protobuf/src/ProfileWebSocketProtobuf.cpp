@@ -65,7 +65,7 @@ CloudStatus ProfileWebSocketProtobuf::list(const CloudConfig& config,
                     break;
                 case ProfileFilter::ProfileStatus:
                     return CloudStatus(CLOUD_PARAMETER_VALIDATION_ERROR,
-                                       "ProfileStatus filter not supported on WebSocket");
+                                       "ProfileStatus filter not supported on WebSocketProtobuf");
                 default:
                     return CloudStatus(CLOUD_PARAMETER_VALIDATION_ERROR, "Invalid filter given");
             }
@@ -107,7 +107,8 @@ CloudStatus ProfileWebSocketProtobuf::list(const CloudConfig& config,
                     query->set_userprofilename(filter.second);
                     break;
                 case ProfileFilter::ProfileStatus:
-                    return CloudStatus(CLOUD_PARAMETER_VALIDATION_ERROR, "ProfileStatus not supported on WebSocket");
+                    return CloudStatus(CLOUD_PARAMETER_VALIDATION_ERROR,
+                                       "ProfileStatus not supported on WebSocketProtobuf");
                 case ProfileFilter::AccountId:
                     accountID = filter.second;
                     break;

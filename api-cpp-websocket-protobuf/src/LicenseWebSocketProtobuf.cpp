@@ -27,5 +27,5 @@ CloudStatus LicenseWebSocketProtobuf::list(const CloudConfig& config,
 {
     DFX_CLOUD_VALIDATOR_MACRO(LicenseValidator, list(config, filters, offset, licenses, totalCount));
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE,
-                       fmt::format("{} does not support {} end-point", "WebSocket", "license list"));
+                       fmt::format("{} does not support {} end-point", "WebSocketProtobuf", "license list"));
 }

@@ -42,7 +42,8 @@ class dfxcloud(ConanFile):
         "with_c_abi": [True, False],
         "with_curl": [True, False],
         "with_grpc": [True, False],
-        "with_websocket": [True, False],
+        "with_websocket_json": [True, False],
+        "with_websocket_protobuf": [True, False],
         "with_rest": [True, False],
         "with_validators": [True, False],
         "with_yaml": [True, False],
@@ -59,8 +60,9 @@ class dfxcloud(ConanFile):
         "measurement_only": False,
         "with_c_abi": True,
         "with_curl": True,
-        "with_grpc": True,
-        "with_websocket": True,
+        "with_grpc": False,
+        "with_websocket_json": True,
+        "with_websocket_protobuf": False,
         "with_rest": True,
         "with_validators": True,
         "with_yaml": True,
@@ -78,8 +80,9 @@ class dfxcloud(ConanFile):
     def export_sources(self):
         copy(self, ".*", src=self.recipe_folder, dst=self.export_sources_folder, keep_path=True)  # May need .clang-tidy, etc.
         copy(self, "CMakeLists.txt", src=self.recipe_folder, dst=self.export_sources_folder, keep_path=True)
-        for folder in ["api-cpp", "api-cpp-grpc", "api-cpp-rest", "api-cpp-validator", "api-cpp-websocket-protobuf", "api-protos-grpc",
-                        "api-protos-web", "api-utils", "cmake", "doc", "licenses", "resources", "test", "test_data", "tool-dfxcli", "websocket"]:
+        for folder in ["api-cpp", "api-cpp-grpc", "api-cpp-rest", "api-cpp-validator", "api-cpp-websocket-json",
+                       "api-cpp-websocket-protobuf", "api-protos-grpc", "api-protos-web", "api-utils", "cmake",
+                       "doc", "licenses", "resources", "test", "test_data", "tool-dfxcli", "websocket"]:
             copy(self, "*", src=os.path.join(self.recipe_folder, folder), dst=os.path.join(self.export_sources_folder, folder), keep_path=True)
 
     def config_options(self):
@@ -161,7 +164,8 @@ class dfxcloud(ConanFile):
 
         # openssl is used by cmake, libwebsockets, gRPC, etc. they tend to drift and we want the latest
         # so it needs to be explicitly set here as the latest.
-        if self.options.with_grpc or self.options.with_websocket or self.options.with_curl:
+        if self.options.with_grpc or self.options.with_websocket_json or \
+                self.options.with_websocket_protobuf or self.options.with_curl:
             self.requires(f"openssl/{deps['openssl']['version']}", override=True)      # Override grpc dependent on 1.1.1h
 
         if self.options.with_grpc:
@@ -174,7 +178,7 @@ class dfxcloud(ConanFile):
         if self.options.with_curl:
             self.requires(f"libcurl/{deps['libcurl']['version']}")            # Fetch rootca from standalone
 
-        if self.options.with_websocket:
+        if self.options.with_websocket_json or self.options.with_websocket_protobuf:
             if self.settings.os != "Emscripten":
                 self.requires(f"libwebsockets/{deps['libwebsockets']['version']}")
             self.requires(f"base64/{deps['base64']['version']}")
@@ -202,7 +206,8 @@ class dfxcloud(ConanFile):
         toolchain.variables["MEASUREMENT_ONLY"] = "ON" if self.options.measurement_only else "OFF"
         toolchain.variables["WITH_CURL"] = "ON" if self.options.with_curl else "OFF"
         toolchain.variables["WITH_REST"] = "ON" if self.options.with_rest else "OFF"
-        toolchain.variables["WITH_WEBSOCKET"] = "ON" if self.options.with_websocket else "OFF"
+        toolchain.variables["WITH_WEBSOCKET_JSON"] = "ON" if self.options.with_websocket_json else "OFF"
+        toolchain.variables["WITH_WEBSOCKET_PROTOBUF"] = "ON" if self.options.with_websocket_protobuf else "OFF"
         toolchain.variables["WITH_GRPC"] = "ON" if self.options.with_grpc else "OFF"
         toolchain.variables["WITH_VALIDATORS"] = "ON" if self.options.with_validators else "OFF"
         toolchain.variables["WITH_YAML"] = "ON" if self.options.with_yaml else "OFF"

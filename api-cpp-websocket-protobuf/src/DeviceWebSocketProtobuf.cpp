@@ -8,6 +8,8 @@
 
 #include "dfx/proto/devices.pb.h"
 
+#include "fmt/format.h"
+
 using namespace dfx::api;
 using namespace dfx::api::websocket::protobuf;
 
@@ -137,13 +139,6 @@ CloudStatus DeviceWebSocketProtobuf::update(const CloudConfig& config, const Dev
 
 CloudStatus DeviceWebSocketProtobuf::remove(const CloudConfig& config, const std::string& deviceID)
 {
-    DFX_CLOUD_VALIDATOR_MACRO(DeviceValidator, remove(config, deviceID));
-
-    dfx::proto::devices::RemoveRequest request;
-    dfx::proto::devices::RemoveResponse response;
-
-    request.mutable_params()->set_id(deviceID);
-
-    // Server returns empty response
-    return cloudWebSocketProtobuf->sendMessage(dfx::api::web::Devices::Remove, request, response);
+    // No longer supported but to avoid runtime breaking clients, just return OK
+    return CloudStatus(CLOUD_OK);
 }

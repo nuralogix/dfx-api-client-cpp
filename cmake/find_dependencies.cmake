@@ -28,13 +28,13 @@ if(WITH_CURL)
   find_package(CURL CONFIG REQUIRED) # CURL::libcurl
 endif(WITH_CURL)
 
-if(WITH_WEBSOCKET)
+if(WITH_WEBSOCKET_JSON OR WITH_WEBSOCKET_PROTOBUF)
   find_package(Libwebsockets CONFIG REQUIRED) # Libwebsockets::libwebsockets
   if(TARGET websockets)
     add_library(Libwebsockets::libwebsockets ALIAS websockets)
   endif()
   find_package(base64 CONFIG REQUIRED) # base64::base64
-endif(WITH_WEBSOCKET)
+endif(WITH_WEBSOCKET_JSON OR WITH_WEBSOCKET_PROTOBUF)
 
 # Handles importing files from the PACKAGE_FOLDERS, analogous to ConanFile::imports() stage. Since the conan
 # imports() is broken for private requirements when using build contexts they are written here.

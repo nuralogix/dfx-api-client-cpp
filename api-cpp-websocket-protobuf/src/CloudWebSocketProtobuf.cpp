@@ -458,6 +458,24 @@ CloudStatus CloudWebSocketProtobuf::login(CloudConfig& config)
     return status;
 }
 
+CloudStatus CloudWebSocketProtobuf::loginWithToken(CloudConfig& config, std::string& token)
+{
+    DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, loginWithToken(config, token));
+
+    dfx::proto::organizations::LoginWithTokenRequest request;
+    dfx::proto::organizations::LoginWithTokenResponse response;
+
+    request.set_token(token);
+
+    // https://dfxapiversion10.docs.apiary.io/#reference/0/organizations/login-with-token
+    auto result = this->sendMessage(web::Organizations::LoginWithToken, request, response);
+    if (result.OK()) {
+        token = response.token();
+    }
+
+    return result;
+}
+
 CloudStatus CloudWebSocketProtobuf::logout(CloudConfig& config)
 {
     DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, logout(config));
@@ -478,7 +496,9 @@ CloudStatus CloudWebSocketProtobuf::logout(CloudConfig& config)
 
 CloudStatus CloudWebSocketProtobuf::registerDevice(CloudConfig& config,
                                                    const std::string& appName,
-                                                   const std::string& appVersion)
+                                                   const std::string& appVersion,
+                                                   const uint16_t tokenExpiresInSeconds,
+                                                   const std::string& tokenSubject)
 {
     DFX_CLOUD_VALIDATOR_MACRO(CloudValidator, registerDevice(config, appName, appVersion));
 
@@ -511,7 +531,12 @@ CloudStatus CloudWebSocketProtobuf::unregisterDevice(CloudConfig& config)
     return sendMessage(dfx::api::web::Organizations::UnregisterLicense, request, response);
 }
 
-CloudStatus CloudWebSocketProtobuf::validateToken(const CloudConfig& config, const std::string& userToken)
+CloudStatus CloudWebSocketProtobuf::verifyToken(const CloudConfig& config, std::string& response)
+{
+    return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
+}
+
+CloudStatus CloudWebSocketProtobuf::renewToken(const CloudConfig& config, std::string& token, std::string& refreshToken)
 {
     return CloudStatus(CLOUD_UNSUPPORTED_FEATURE);
 }
@@ -580,15 +605,17 @@ const std::string& CloudWebSocketProtobuf::getTransportType()
 //     *	MAINTENANCE		| Offline for maintenance
 //     *	ERROR			| Offline due to an error
 //     *	LATENCY			| API is experience latency or a general slowdown
-CloudStatus CloudWebSocketProtobuf::getServerStatus(CloudConfig& config)
+CloudStatus CloudWebSocketProtobuf::getServerStatus(CloudConfig& config, std::string& response)
 {
     dfx::proto::general::StatusRequest request;
 
-    dfx::proto::general::StatusResponse response;
-    auto status = sendMessage(dfx::api::web::General::Status, request, response);
+    dfx::proto::general::StatusResponse protoResponse;
+    auto status = sendMessage(dfx::api::web::General::Status, request, protoResponse);
     if (status.OK()) {
-        auto version = response.version();
-        auto status = response.statusid();
+        nlohmann::json json;
+        json["status"] = protoResponse.statusid();
+        json["version"] = protoResponse.version();
+        response = json.dump();
     }
     return status;
 }

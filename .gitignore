@@ -62,3 +62,4 @@ Thumbs.db
 *.wmv
 
 .vscode
+.env

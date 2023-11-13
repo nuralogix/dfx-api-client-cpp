@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 
 # conanfile.py parses next line to determine version which feeds the version to everything
-set(DFX_CLOUD_LIBRARY_VERSION 1.3.1)
+set(DFX_CLOUD_LIBRARY_VERSION 2.0.0)
 
 project(
   dfxcloud
@@ -37,20 +37,25 @@ set(MEASUREMENT_ONLY
     CACHE BOOL "Build with ONLY support to perform measurement (smaller library)")
 
 set(WITH_GRPC
-    TRUE
+    FALSE
     CACHE BOOL "Build with gRPC support")
-set(WITH_CURL
-    TRUE
-    CACHE BOOL "Build with curl support")
-set(WITH_REST
-    TRUE
-    CACHE BOOL "Build with REST support")
-set(WITH_WEBSOCKET
-    TRUE
-    CACHE BOOL "Build with WebSocket support")
+
+# If building for Emscripten curl is unavailable
+if(NOT EMSCRIPTEN)
+  set(WITH_CURL TRUE CACHE BOOL "Build with curl support")
+  set(WITH_REST TRUE CACHE BOOL "Build with REST support")
+else()
+  set(WITH_CURL FALSE CACHE BOOL "Build with curl support" FORCE)
+  set(WITH_REST FALSE CACHE BOOL "Build with REST support" FORCE)
+endif()
+
 set(WITH_WEBSOCKET_PROTOBUF
-    TRUE
+    FALSE
     CACHE BOOL "Buidl with WebSocket Protobuf support")
+set(WITH_WEBSOCKET_JSON
+    TRUE
+    CACHE BOOL "Build with WebSocket JSON support")
+
 set(WITH_VALIDATORS
     TRUE
     CACHE BOOL "Build with Validation support")
@@ -140,14 +145,15 @@ add_subdirectory(api-cpp-grpc)
 add_subdirectory(api-cpp-rest)
 add_subdirectory(websocket) # Provide an implementation for api-cpp-websockets to use
 add_subdirectory(api-cpp-websocket-protobuf)
+add_subdirectory(api-cpp-websocket-json)
 add_subdirectory(doc)
 
 add_library(dfxcloud "")
 add_library(DFXCloud::dfxcloud ALIAS dfxcloud)
 
-if(WITH_DFXCLI)
+if(WITH_DFXCLI AND NOT CMAKE_CROSSCOMPILING)
   add_subdirectory(tool-dfxcli)
-endif(WITH_DFXCLI)
+endif(WITH_DFXCLI AND NOT CMAKE_CROSSCOMPILING)
 
 if(WITH_TESTS)
   add_subdirectory(test)
@@ -169,7 +175,9 @@ target_link_libraries(
           $<$<BOOL:${WITH_GRPC}>:$<TARGET_OBJECTS:api-cpp-grpc>>
           $<$<BOOL:${WITH_REST}>:$<TARGET_OBJECTS:api-cpp-rest>>
           $<$<BOOL:${WITH_WEBSOCKET_PROTOBUF}>:$<TARGET_OBJECTS:api-cpp-websocket-protobuf>>
-          $<$<BOOL:${WITH_WEBSOCKET}>:$<TARGET_OBJECTS:websocket>>)
+          $<$<BOOL:${WITH_WEBSOCKET_JSON}>:$<TARGET_OBJECTS:api-cpp-websocket-json>>
+          $<$<OR:$<BOOL:${WITH_WEBSOCKET_PROTOBUF}>,$<BOOL:${WITH_WEBSOCKET_JSON}>>:$<TARGET_OBJECTS:websocket>>
+)
 
 # When not including gRPC, Undefined symbols for architecture arm64: "_CFRelease", referenced from:
 # _Curl_resolv in libcurl.a(libcurl_la-hostip.o)
@@ -292,7 +300,7 @@ message(STATUS "    MEASUREMENT_ONLY=${MEASUREMENT_ONLY}")
 message(STATUS "    WITH_CURL=${WITH_CURL}")
 message(STATUS "    WITH_GRPC=${WITH_GRPC}")
 message(STATUS "    WITH_REST=${WITH_REST}")
-message(STATUS "    WITH_WEBSOCKET=${WITH_WEBSOCKET}")
+message(STATUS "    WITH_WEBSOCKET_JSON=${WITH_WEBSOCKET_JSON}")
 message(STATUS "    WITH_WEBSOCKET_PROTOBUF=${WITH_WEBSOCKET_PROTOBUF}")
 message(STATUS "    WITH_VALIDATORS=${WITH_VALIDATORS}")
 message(STATUS "")

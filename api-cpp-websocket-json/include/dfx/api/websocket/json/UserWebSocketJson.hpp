@@ -2,28 +2,24 @@
 // See LICENSE.txt in the project root for license information.
 
 #pragma once
-#ifndef DFX_API_CLOUD_USER_GRPC_H
-#define DFX_API_CLOUD_USER_GRPC_H
+#ifndef DFX_API_CLOUD_USER_WEBSOCKET_JSON_H
+#define DFX_API_CLOUD_USER_WEBSOCKET_JSON_H
 
 #include "dfx/api/UserAPI.hpp"
 
-#include "dfx/users/v2/users.grpc.pb.h"
-
-#include <list>
 #include <memory>
-#include <string>
 
-namespace dfx::api::grpc
+namespace dfx::api::websocket::json
 {
 
-class CloudGRPC;
+class CloudWebSocketJson;
 
-class UserGRPC : public UserAPI
+class UserWebSocketJson : public UserAPI
 {
 public:
-    UserGRPC(const CloudConfig& config, const std::shared_ptr<CloudGRPC>& cloudGRPC);
+    UserWebSocketJson(const CloudConfig& config, std::shared_ptr<CloudWebSocketJson> cloudWebSocketJson);
 
-    ~UserGRPC() override = default;
+    ~UserWebSocketJson() override = default;
 
     CloudStatus create(const CloudConfig& config,
                        const std::string& email,
@@ -48,18 +44,10 @@ public:
 
     CloudStatus update(const CloudConfig& config, const User& user) override;
 
-    CloudStatus
-    retrieve(const CloudConfig& config, const std::string& userID, const std::string& email, User& user) override;
-
-    CloudStatus
-    update(const CloudConfig& config, const std::string& userID, const std::string& email, const User& user) override;
-
-    CloudStatus remove(const CloudConfig& config, const std::string& userID, const std::string& email) override;
-
 private:
-    std::unique_ptr<dfx::users::v2::API::Stub> grpcUserStub;
+    std::shared_ptr<CloudWebSocketJson> cloudWebSocketJson;
 };
 
-} // namespace dfx::api::grpc
+} // namespace dfx::api::websocket::json
 
-#endif // DFX_API_CLOUD_USER_GRPC_H
+#endif // DFX_API_CLOUD_USER_WEBSOCKET_JSON_H

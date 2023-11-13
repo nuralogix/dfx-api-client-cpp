@@ -15,8 +15,9 @@ export docs                      := env_var_or_default("docs", "False")         
 export measurement_only          := env_var_or_default("measurement_only", "False") # Assume measurement_only off
 export with_curl                 := env_var_or_default("with_curl", "True")         # Assume with_curl on
 export with_rest                 := env_var_or_default("with_rest", "True")         # Assume with_rest on
-export with_websocket            := env_var_or_default("with_websocket", "True")    # Assume with_websocket on
-export with_grpc                 := env_var_or_default("with_grpc", "True")         # Assume with_grpc on
+export with_websocket_json       := env_var_or_default("with_websocket_json", "True")      # Assume with_websocket_json on
+export with_websocket_protobuf   := env_var_or_default("with_websocket_protobuf", "False") # Assume with_websocket_proto off
+export with_grpc                 := env_var_or_default("with_grpc", "False")         # Assume with_grpc off
 export with_validators           := env_var_or_default("with_validators", "True")   # Assume with_validators on
 export with_dfxcli               := env_var_or_default("with_dfxcli", "True")       # Assume with_dfxcli on
 export with_yaml                 := env_var_or_default("with_yaml", "True")         # Assume with_yaml on
@@ -82,7 +83,7 @@ all: export macos ios android emscripten windows linux
     if ( ("{{os()}}" == "macos"   and ("{{os}}" == "macos"   or "{{os}}" == "android" or "{{os}}" == "emscripten" or "{{os}}" == "ios")) or \
           ("{{os()}}" == "linux"   and ("{{os}}" == "linux"   or "{{os}}" == "android" or "{{os}}" == "emscripten")) or \
           ("{{os()}}" == "windows" and ("{{os}}" == "windows" or "{{os}}" == "android" or "{{os}}" == "emscripten")) ) { \
-        let-env command_line = (["-pr:b", '{{justfile_directory()}}/conan/profiles/{{os}}/build-default', \
+        $env.command_line = (["-pr:b", '{{justfile_directory()}}/conan/profiles/{{os}}/build-default', \
                            "-pr:h", ('{{justfile_directory()}}/conan/profiles/{{os}}/' + $target_arch), \
                            "--build", $env.build, \
                            "-o", ("dfxcloud/*:enable_checks=" + $env.checks), \
@@ -91,13 +92,14 @@ all: export macos ios android emscripten windows linux
                            "-o", ("dfxcloud/*:measurement_only=" + $env.measurement_only), \
                            "-o", ("dfxcloud/*:with_curl=" + $env.with_curl), \
                            "-o", ("dfxcloud/*:with_rest=" + $env.with_rest), \
-                           "-o", ("dfxcloud/*:with_websocket=" + $env.with_websocket), \
+                           "-o", ("dfxcloud/*:with_websocket_json=" + $env.with_websocket_json), \
+                           "-o", ("dfxcloud/*:with_websocket_protobuf=" + $env.with_websocket_protobuf), \
                            "-o", ("dfxcloud/*:with_grpc=" + $env.with_grpc), \
                            "-o", ("dfxcloud/*:with_validators=" + $env.with_validators), \
                            "-o", ("dfxcloud/*:with_dfxcli=" + $env.with_dfxcli), \
                            "-o", ("dfxcloud/*:with_yaml=" + $env.with_yaml), \
                            "-s", ("build_type=" + $env.build_type)]); \
-        if ( ("{{CONAN_FLAGS}}" | str length) > 0 ) { let-env command_line = ($env.command_line | append ( "{{CONAN_FLAGS}}" | split words)); }; \
+        if ( ("{{CONAN_FLAGS}}" | str length) > 0 ) { $env.command_line = ($env.command_line | append ( "{{CONAN_FLAGS}}" | split words)); }; \
         if ( $env.only_test == True ) { \
             let reference = (conan inspect . --format json | from json | get name version | reduce { |it, ac| $"( $ac + '/' + $it)" }); \
             let command_line = (($env.command_line | prepend [ "conan", "test" ] | append [$env.test_folder, $reference]) | reduce {|it,acc| $"($acc + ' ' + $it)"}); \
@@ -179,7 +181,7 @@ emscripten: (build "emscripten" "emscripten")
 
 # Performs the build or test
 @_do_cmake os target_arch *CONAN_FLAGS: (_display "Building with settings:")
-    let-env command_line = (["-B", $env.folder, \
+    $env.command_line = (["-B", $env.folder, \
                        "-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=conan_provider.cmake", \
                        ("-DCMAKE_BUILD_TYPE=" + ($env.build_type | str capitalize)), \
                        $"-DENABLE_CHECKS=($env.checks)", \
@@ -188,7 +190,8 @@ emscripten: (build "emscripten" "emscripten")
                        $"-DMEASUREMENT_ONLY=($env.measurement_only)", \
                        $"-DWITH_CURL=($env.with_curl)", \
                        $"-DWITH_REST=($env.with_rest)", \
-                       $"-DWITH_WEBSOCKET=($env.with_websocket)", \
+                       $"-DWITH_WEBSOCKET_JSON=($env.with_websocket_json)", \
+                       $"-DWITH_WEBSOCKET_PROTOBUF=($env.with_websocket_protobuf)", \
                        $"-DWITH_GRPC=($env.with_grpc)", \
                        $"-DWITH_VALIDATORS=($env.with_validators)", \
                        $"-DWITH_DFXCLI=($env.with_dfxcli)", \
@@ -209,7 +212,8 @@ emscripten: (build "emscripten" "emscripten")
                        $"-DMEASUREMENT_ONLY=($env.measurement_only)", \
                        $"-DWITH_CURL=($env.with_curl)", \
                        $"-DWITH_REST=($env.with_rest)", \
-                       $"-DWITH_WEBSOCKET=($env.with_websocket)", \
+                       $"-DWITH_WEBSOCKET_JSON=($env.with_websocket_json)", \
+                       $"-DWITH_WEBSOCKET_PROTOBUF=($env.with_websocket_protobuf)", \
                        $"-DWITH_GRPC=($env.with_grpc)", \
                        $"-DWITH_VALIDATORS=($env.with_validators)", \
                        $"-DWITH_DFXCLI=($env.with_dfxcli)", \
@@ -267,15 +271,15 @@ format target="fix-format": (make target)
 
 # Updates licenses using https://github.com/lsm-dev/license-header-checker
 update-license:
-    license-header-checker -a -v -r resources/license-header.txt . hpp cpp
+    license-header-checker -a -v -r {{justfile_directory()}}/resources/license-header.txt {{justfile_directory()}} hpp cpp
 
 # Current version of library
 @version:
-    conan inspect . | from yaml | get version
+    conan inspect {{justfile_directory()}} | from yaml | get version
 
 # Show the options available with conan for package
 @options:
-    conan inspect . | from yaml | get options  | transpose key val | each { |e| print $"($e.key)=($e.val)" } | ignore
+    conan inspect {{justfile_directory()}} | from yaml | get options  | transpose key val | each { |e| print $"($e.key)=($e.val)" } | ignore
 
 # install ubuntu system packages
 _install-ubuntu-system:

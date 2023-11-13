@@ -8,9 +8,10 @@ set(API_CPP_GRPC_HEADERS
     ${CMAKE_CURRENT_LIST_DIR}/include/dfx/api/grpc/DeviceGRPC.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/dfx/api/grpc/MeasurementGRPC.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/dfx/api/grpc/MeasurementStreamGRPC.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/include/dfx/api/grpc/OrganizationGRPC.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/dfx/api/grpc/SignalGRPC.hpp
     ${CMAKE_CURRENT_LIST_DIR}/include/dfx/api/grpc/StudyGRPC.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/include/dfx/api/grpc/UserGRPC.hpp)
+)
 
 add_library(
   api-cpp-grpc OBJECT
@@ -20,9 +21,9 @@ add_library(
   src/DeviceGRPC.cpp
   src/MeasurementGRPC.cpp
   src/MeasurementStreamGRPC.cpp
+  src/OrganizationGRPC.cpp
   src/SignalGRPC.cpp
   src/StudyGRPC.cpp
-  src/UserGRPC.cpp
   ${API_CPP_GRPC_HEADERS})
 
 if(MSVC)

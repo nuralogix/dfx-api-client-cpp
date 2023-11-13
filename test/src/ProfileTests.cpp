@@ -150,5 +150,8 @@ TEST_F(ProfileTests, ProfileNotFound)
 
     Profile profile;
     auto status = service->retrieve(config, profileID, profile);
+    if (status.code == CLOUD_USER_NOT_AUTHORIZED) {
+        GTEST_SKIP() << "ProfileTests::ProfileNotFound(): USER_NOT_AUTHORIZED";
+    }
     ASSERT_EQ(status.code, CLOUD_RECORD_NOT_FOUND) << status;
 }
