@@ -83,8 +83,8 @@ all: export macos ios android emscripten windows linux
     if ( ("{{os()}}" == "macos"   and ("{{os}}" == "macos"   or "{{os}}" == "android" or "{{os}}" == "emscripten" or "{{os}}" == "ios")) or \
           ("{{os()}}" == "linux"   and ("{{os}}" == "linux"   or "{{os}}" == "android" or "{{os}}" == "emscripten")) or \
           ("{{os()}}" == "windows" and ("{{os}}" == "windows" or "{{os}}" == "android" or "{{os}}" == "emscripten")) ) { \
-        $env.command_line = (["-pr:b", '{{justfile_directory()}}/conan/profiles/{{os}}/build-default', \
-                           "-pr:h", ('{{justfile_directory()}}/conan/profiles/{{os}}/' + $target_arch), \
+        $env.command_line = (["-pr:b", (('{{justfile_directory()}}' | str replace '\' '/' -a) + '/conan/profiles/{{os}}/build-default'), \
+                           "-pr:h", (('{{justfile_directory()}}' | str replace '\' '/' -a) + '/conan/profiles/{{os}}/' + $target_arch), \
                            "--build", $env.build, \
                            "-o", ("dfxcloud/*:enable_checks=" + $env.checks), \
                            "-o", ("dfxcloud/*:shared=" + $env.shared), \
@@ -197,14 +197,14 @@ emscripten: (build "emscripten" "emscripten")
                        $"-DWITH_DFXCLI=($env.with_dfxcli)", \
                        $"-DWITH_YAML=($env.with_yaml)"]); \
     if ( $env.cmake_config == True ) { \
-        let cmake_config = (($env.command_line | prepend [ "cmake", "-S", "{{justfile_directory()}}"]) | reduce {|it,acc| $"($acc + ' ' + $it)"}); \
+        let cmake_config = (($env.command_line | prepend [ "cmake", "-S", ('{{justfile_directory()}}' | str replace '\' '/' -a)]) | reduce {|it,acc| $"($acc + ' ' + $it)"}); \
         print $cmake_config; \
     }
 
 # CMake configure build folder
 @config:
-    let cmake_configure = (["cmake", "-S", "{{justfile_directory()}}", "-B", ([{{justfile_directory()}}, $env.folder] | path join), \
-                       ("-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=" + (["{{justfile_directory()}}", "conan_provider.cmake"] | path join)), \
+    let cmake_configure = (["cmake", "-S", ('{{justfile_directory()}}' | str replace '\' '/' -a), "-B", ([('{{justfile_directory()}}' | str replace '\' '/' -a), $env.folder] | path join), \
+                       ("-DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=" + ([('{{justfile_directory()}}' | str replace '\' '/' -a), "conan_provider.cmake"] | path join)), \
                        ("-DCMAKE_BUILD_TYPE=" + ($env.build_type | str capitalize)), \
                        $"-DENABLE_CHECKS=($env.checks)", \
                        $"-DBUILD_SHARED_LIBS=($env.shared)", \
@@ -224,7 +224,7 @@ emscripten: (build "emscripten" "emscripten")
 # CMake build the configured project in build folder
 @make target="all":
     let num_cpu = ([(( sys | get cpu | length ) - 1), 4] | math max | into string); \
-    let build_folder = ([{{justfile_directory()}}, $env.folder] | path join); \
+    let build_folder = ([('{{justfile_directory()}}' | str replace '\' '/' -a), $env.folder] | path join); \
     if not ( $build_folder | path exists ) { \
        print $"Unable to locate build folder '($build_folder)'.\nHave you run 'just config'?"; \
        exit 1; \
@@ -245,10 +245,10 @@ format target="fix-format": (make target)
 
 # CMake Test (using gtest client)
 @test context="''": (make "test-cloud-api")
-    let test_executable = ([ ([{{justfile_directory()}}, $env.folder, "test", "test-cloud-api"] | path join), \
-                            ([{{justfile_directory()}}, $env.folder, "test", "Debug", "test-cloud-api.exe"] | path join), \
-                            {{justfile_directory()}} ] | where { |it| $it | path exists } | first); \
-    if $test_executable == {{justfile_directory()}} { \
+    let test_executable = ([ ([('{{justfile_directory()}}'' | str replace '\' '/' -a), $env.folder, "test", "test-cloud-api"] | path join), \
+                            ([('{{justfile_directory()}}' | str replace '\' '/' -a), $env.folder, "test", "Debug", "test-cloud-api.exe"] | path join), \
+                            ('{{justfile_directory()}}'' | str replace '\' '/' -a) ] | where { |it| $it | path exists } | first); \
+    if $test_executable == ('{{justfile_directory()}}' | str replace '\' '/' -a) { \
        print "Unable to locate 'test-cloud-api', have you run 'just make'?"; \
     } else { \
        nu -c $test_executable "--config={{context}}"; \
@@ -271,15 +271,15 @@ format target="fix-format": (make target)
 
 # Updates licenses using https://github.com/lsm-dev/license-header-checker
 update-license:
-    license-header-checker -a -v -r {{justfile_directory()}}/resources/license-header.txt {{justfile_directory()}} hpp cpp
+    license-header-checker -a -v -r ('{{justfile_directory()}}' | str replace '\' '/' -a) + '/resources/license-header.txt' ('{{justfile_directory()}}' | str replace '\' '/' -a) hpp cpp
 
 # Current version of library
 @version:
-    conan inspect {{justfile_directory()}} | from yaml | get version
+    conan inspect ('{{justfile_directory()}}' | str replace '\' '/' -a) | from yaml | get version
 
 # Show the options available with conan for package
 @options:
-    conan inspect {{justfile_directory()}} | from yaml | get options  | transpose key val | each { |e| print $"($e.key)=($e.val)" } | ignore
+    conan inspect ('{{justfile_directory()}}' | str replace '\' '/' -a) | from yaml | get options  | transpose key val | each { |e| print $"($e.key)=($e.val)" } | ignore
 
 # install ubuntu system packages
 _install-ubuntu-system:
