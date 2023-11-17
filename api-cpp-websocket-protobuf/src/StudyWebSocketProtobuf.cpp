@@ -178,7 +178,7 @@ CloudStatus StudyWebSocketProtobuf::retrieveStudyConfig(const CloudConfig& confi
         const char* src = &(response.configfile()[0]);
         size_t srclen = response.configfile().size();
         std::vector<char> decodedData;
-        decodedData.reserve(srclen); // Needs to be at least 2/3 the length of input
+        decodedData.resize(srclen); // Needs to be at least 2/3 the length of input
         char* out = &(decodedData[0]);
         size_t outlen = 0;
         int flags = 0;
