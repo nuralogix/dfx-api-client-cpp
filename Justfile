@@ -83,8 +83,8 @@ all: export macos ios android emscripten windows linux
     if ( ("{{os()}}" == "macos"   and ("{{os}}" == "macos"   or "{{os}}" == "android" or "{{os}}" == "emscripten" or "{{os}}" == "ios")) or \
           ("{{os()}}" == "linux"   and ("{{os}}" == "linux"   or "{{os}}" == "android" or "{{os}}" == "emscripten")) or \
           ("{{os()}}" == "windows" and ("{{os}}" == "windows" or "{{os}}" == "android" or "{{os}}" == "emscripten")) ) { \
-        $env.command_line = (["-pr:b", (["{{justfile_directory()}}" "conan" "profiles" "{{os}}" "build-default"] | path join), \
-                           "-pr:h", (["{{justfile_directory()}}" "conan" "profiles" "{{os}}" $target_arch] | path join), \
+        $env.command_line = (["-pr:b", '{{justfile_directory()}}/conan/profiles/{{os}}/build-default', \
+                           "-pr:h", ('{{justfile_directory()}}/conan/profiles/{{os}}/' + $target_arch), \
                            "--build", $env.build, \
                            "-o", ("dfxcloud/*:enable_checks=" + $env.checks), \
                            "-o", ("dfxcloud/*:shared=" + $env.shared), \
