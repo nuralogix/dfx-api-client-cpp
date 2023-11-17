@@ -245,9 +245,9 @@ format target="fix-format": (make target)
 
 # CMake Test (using gtest client)
 @test context="''": (make "test-cloud-api")
-    let test_executable = ([ ([('{{justfile_directory()}}'' | str replace '\' '/' -a), $env.folder, "test", "test-cloud-api"] | path join), \
+    let test_executable = ([ ([('{{justfile_directory()}}' | str replace '\' '/' -a), $env.folder, "test", "test-cloud-api"] | path join), \
                             ([('{{justfile_directory()}}' | str replace '\' '/' -a), $env.folder, "test", "Debug", "test-cloud-api.exe"] | path join), \
-                            ('{{justfile_directory()}}'' | str replace '\' '/' -a) ] | where { |it| $it | path exists } | first); \
+                            ('{{justfile_directory()}}' | str replace '\' '/' -a) ] | where { |it| $it | path exists } | first); \
     if $test_executable == ('{{justfile_directory()}}' | str replace '\' '/' -a) { \
        print "Unable to locate 'test-cloud-api', have you run 'just make'?"; \
     } else { \
