@@ -83,8 +83,8 @@ all: export macos ios android emscripten windows linux
     if ( ("{{os()}}" == "macos"   and ("{{os}}" == "macos"   or "{{os}}" == "android" or "{{os}}" == "emscripten" or "{{os}}" == "ios")) or \
           ("{{os()}}" == "linux"   and ("{{os}}" == "linux"   or "{{os}}" == "android" or "{{os}}" == "emscripten")) or \
           ("{{os()}}" == "windows" and ("{{os}}" == "windows" or "{{os}}" == "android" or "{{os}}" == "emscripten")) ) { \
-        $env.command_line = (["-pr:b", '{{justfile_directory()}}/conan/profiles/{{os}}/build-default', \
-                           "-pr:h", ('{{justfile_directory()}}/conan/profiles/{{os}}/' + $target_arch), \
+        $env.command_line = (["-pr:b", (["{{justfile_directory()}}" "conan" "profiles" "{{os}}" "build-default"] | path join), \
+                           "-pr:h", (["{{justfile_directory()}}" "conan" "profiles" "{{os}}" $target_arch] | path join), \
                            "--build", $env.build, \
                            "-o", ("dfxcloud/*:enable_checks=" + $env.checks), \
                            "-o", ("dfxcloud/*:shared=" + $env.shared), \
@@ -168,7 +168,7 @@ emscripten: (build "emscripten" "emscripten")
 
 # Show the platform information
 @show:
-    ("date:   \"" + (date now | date format "%Y-%m-%d %H:%M:%S") + "\"") | print; \
+    ("date:   \"" + (date now | format date "%Y-%m-%d %H:%M:%S") + "\"") | print; \
     ("host:   \"" + (sys | get host.name) + " " + (sys | get host.os_version) + "\"") | print; \
     ("os:     {{os()}}") | print; \
     ("arch:   {{arch()}}") | print; \
