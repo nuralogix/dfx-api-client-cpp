@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [2.0.3]
+ - Enable resumable measurements given a measurementID.
+
 ## [2.0.2]
  - Reverted the lws_protocol intialization change which used C++20 syntax
    and increased the original buffer size to 10MB (from 1MB).

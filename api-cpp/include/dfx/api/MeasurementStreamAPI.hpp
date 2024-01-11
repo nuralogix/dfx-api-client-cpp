@@ -107,7 +107,8 @@ public:
         Notes,
         Mode, ///< For streaming set Mode="STREAMING"
         PartnerID,
-        Resolution ///< Resolution=0 averages results (default), Resolution=100 is non-averaged
+        Resolution, ///< Resolution=0 averages results (default), Resolution=100 is non-averaged
+        MeasurementID
     };
 
     /**

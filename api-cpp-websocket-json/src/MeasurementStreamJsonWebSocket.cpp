@@ -64,7 +64,17 @@ CloudStatus MeasurementStreamWebSocketJson::setupStream(const CloudConfig& confi
         return CloudStatus(CLOUD_PARAMETER_VALIDATION_ERROR, fmt::format("{} is empty", "config.deviceToken"));
     }
 
+    bool requireMeasurementID = true;
+    {
+        auto it = properties.find(CreateProperty::MeasurementID);
+        if (it != properties.end()) {
+            measurementID = it->second;
+            requireMeasurementID = false;
+        }
+    }
+
     // Create Measurement --> MeasurementID
+    if (requireMeasurementID)
     {
         nlohmann::json request;
 
